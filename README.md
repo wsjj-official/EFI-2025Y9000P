@@ -82,13 +82,14 @@ BIOS 版本 78WW 是本机实测可用的版本；换别的 BIOS 版本请重新
 | 摄像头 | 系统原生 UVC | ioreg `Integrated Camera@14b00000` + `UVCAssistant` 进程 |
 | 安卓 USB 网络共享 | `HoRNDIS 9.2` | 已加载（无线没驱动时的上网备选） |
 | 内存 / 平台伪装 | `RestrictEvents 1.1.7`、`AMFIPass 1.4.1`、`AppleMCEReporterDisabler 1.2`、`CpuTscSync 1.1.3` | 已加载 |
+| 声卡 | AppleALC | 已加载 |
 
 ### 3.2 没有驱动 / 有问题
 
 | 设备 | 状态 | 说明 |
 |---|---|---|
-| **无线网卡** | **完全没驱动**（与你的实测一致） | EFI 里既无 `AirportItlwm` 也无 `itlwm`；系统里 `IO80211` 0 命中。见第 6.1 节 |
-| **声卡（内置扬声器/耳机）** | **没声音**（与你的实测一致） | 控制器与 ALC287 codec 都认到了，但 layout-id 不匹配：见第 6.2 节 |
+| **无线网卡** | **完全没驱动** | EFI 里既无 `AirportItlwm` 也无 `itlwm`；系统里 `IO80211` 0 命中。见第 6.1 节 |
+| **声卡（内置扬声器/耳机）** | **有声音，但声音过小** | 没有音频功放芯片AW88399驱动 |
 | 核显（`8086:7d67`） | 未驱动 | 没注入 `ig-platform-id`，`IONDRVFramebuffer` 实例 0；内屏走独显 |
 | 独显（NVIDIA） | 只有 NullMoth 这套（framebuffer + Metal 翻译层），**不是原生加速** | 开机那 ~98 秒就是它的代价，见第 4 节 |
 | 睡眠 / 唤醒 | **未测试** | 需要实测（合盖、手动睡眠、唤醒、唤醒后触摸板/键盘/网卡是否恢复） |
@@ -293,24 +294,9 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 根端口）用的，当前 `Enabled = false`（不加载）。如果确认无线就在 RP08 上且暂时不用，
 可以打开它减少一次无用的设备枚举；反过来说，**如果要在 RP08 上换新卡，必须保持关闭**。
 
-### 6.2 声卡不能工作
+### 6.2 声卡能工作但声音过小
 
-**现状**：声卡不是"没认到"，而是 layout-id 不匹配。
-
-- ioreg 里控制器 + codec 都挂上了：`HDEF@1F,3` → `IOHDACodecDevice@1F,3,0` → `AppleHDACodecGeneric`
-  → `AppleHDAStream`，配置表里对应 `Codec = "Realtek ALC287"`；控制器在 ACPI 路径 `\_SB.PC02.HDAS`。
-- 当前生效的注入只有 `boot-args` 里的 `alcid=11`；`DeviceProperties` 里那条
-  `#PciRoot(0x80)/Pci(0x1f,0x3) → layout-id 13` 是注释状态（等于关闭）。
-
-**怎么试**（每次只改一个值）：
-
-1. 改 `boot-args` 的 `alcid=`，按 AppleALC 的 ALC287 支持表逐个试常见 layout（`11` / `21` / `66` / `98`），
-   每次重启后用 `ioreg -l | grep -i -E 'codec|layout'` 看有没有变。
-2. 或者把 `DeviceProperties` 里那条恢复成真实注入（去掉 `#`）。**注意路径别照抄 `PciRoot(0x80)`** ——
-   ioreg 里 HDA 挂在 `\_SB.PC02/HDAS@1f0003` 下，路径要按实际总线号写；也可以改用
-   `alc-layout-id` 属性。
-3. 判断方向：如果**外放没声但耳机有声**，那是内置功放（smart amp）那一段，需要专门处理；
-   如果**耳机也没声**，先确认所选 layout 的配置里是否包含 `CodecID = 0x10EC0287`（ALC287）。
+- 没有`AW88399`音频功放的驱动
 
 ---
 
