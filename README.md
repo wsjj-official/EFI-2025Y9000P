@@ -91,8 +91,6 @@ BIOS 版本 78WW 是本机实测可用的版本；换别的 BIOS 版本请重新
 | **声卡（内置扬声器/耳机）** | **没声音**（与你的实测一致） | 控制器与 ALC287 codec 都认到了，但 layout-id 不匹配：见第 6.2 节 |
 | 核显（`8086:7d67`） | 未驱动 | 没注入 `ig-platform-id`，`IONDRVFramebuffer` 实例 0；内屏走独显 |
 | 独显（NVIDIA） | 只有 NullMoth 这套（framebuffer + Metal 翻译层），**不是原生加速** | 开机那 ~98 秒就是它的代价，见第 4 节 |
-| 蓝牙 | **待你确认** | 栈起来了（ioreg `IOBluetoothHCIController` 已匹配，日志里 `IOUserBluetoothSerialDriver` dext 加载、bluetoothd 一直在扫 LE），但 `IntelBluetoothFirmware 2.5.0` 这个 personality 在 ioreg 里是 `!registered, !matched` |
-| 雷电 / USB4                 | **未测试**                                                   | 未做验证                                                     |
 | 睡眠 / 唤醒 | **未测试** | 需要实测（合盖、手动睡眠、唤醒、唤醒后触摸板/键盘/网卡是否恢复） |
 | HDMI / DP 外接输出 | **未测试** | 与独显的模式设定有关，建议实测 |
 
