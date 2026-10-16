@@ -5,10 +5,11 @@
 系统环境（验证时）：macOS Sequoia **15.7.8 (24G824)**，OpenCore **1.0.8 RELEASE**（官方版，
 四个引导文件与官方包逐字节一致）
 本目录整理时间：2026-10-14
+本目录最后更新：**2026-10-16 —— BE200 无线网卡已打通**（两份变体都同步了，见 6.1 节与下面的「更新记录」）
 
 > 这份 EFI 是**为上述这一台机器**做的：里面带了这台机器的身份信息（SMBIOS 三码）、
 > 一份属于这台机器固件的 DSDT、以及按这块板子物理 USB 口做的端口图。
-> 拷到别的机器前请先读第 9 节。
+> 拷到别的机器前请先读第 7 节。
 
 ---
 
@@ -23,9 +24,72 @@ EFI-Y9000P-2025-U9-275HX-78WW\
 │       ├─ config.plist       ← 当前生效配置（SHA256 见第 8 节）
 │       ├─ OpenCore.efi / OpenRuntime.efi / Drivers\ / Tools\
 │       ├─ ACPI\              ← 1 份 DSDT + 14 个 SSDT 文件（配置里实际加载 1 DSDT + 11 SSDT）
-│       ├─ Kexts\             ← 26 个顶层 kext + 7 个插件包（config 里共 33 条，启用 29 条）
+│       ├─ Kexts\             ← 29 个顶层 kext + 7 个插件包（config 里共 36 条，启用 32 条）
 │       └─ Resources\         ← OpenCanopy 主题资源
 ```
+
+> **2026-10-16 新增内容**
+>
+> - `Wi-Fi修复-所需文件\`：OCLP-Mod 3.1.9 的两个安装包（`OCLP-Mod.pkg` + `AutoPkg-Assets.pkg`）、
+>   驱动原件 `Ventura.zip`、4 个诊断脚本（`BE200-诊断` / `BE200-手动连WiFi` / `亮度诊断` / `USB诊断`）
+>   与上机说明 `读我-先看这个.txt`
+> - 每个变体下的 `_alt\config.plist.before-wififix-20261016`：本次改动前的 config 备份
+> - 每个变体下的 `EFI\OC\Logs\`：OpenCore 启动日志落盘目录（`Misc>Debug>Target = 67` 已打开）
+
+### 更新记录
+
+**2026-10-16 —— BE200 无线网卡打通，两份变体已同步**
+
+- `Kernel>Add` +3（`IOSkywalkFamily` / `IO80211FamilyLegacy` / `AirportItlwm`）、
+  `Kernel>Block` +1（屏蔽系统自带的 `IOSkywalkFamily`）、`csr-active-config` → `0xFF0F0000`、
+  `Misc>Debug>Target` → `67`；
+  `不带NVDIA驱动修改项EFI` 里 `SSDT-Disable_Network_RP08.aml` 由 `true` 改为 `false`
+  （原来把 BE200 藏起来了，开着 Wi-Fi 永远不可能工作）。
+- 系统侧再跑一次 **OCLP-Mod 3.1.9** 的 `Post-Install Root Patch`（列表里会出现「网络：Intel无线网卡」），
+  安装包与完整步骤见 `Wi-Fi修复-所需文件\`。详见 6.1 节与 8.1 节。
+- 实测（2026-10-15 夜日志）：三个 kext 均加载、`en5` 报 `fw: 90.38c93dbc.0`、信道表完整
+  （2.4G 1–13 / 5G 36–177）、`/System/Library/CoreServices/oclp-mod.plist` 里有 `Intel无线网卡` 补丁记录。
+- 新增 4 个诊断脚本：`BE200-诊断` / `BE200-手动连WiFi` / `亮度诊断` / `USB诊断`。
+
+- 
+
+**2026-10-16 —— 两个"待查"项的阶段性结论**
+
+- **内屏亮度（暂缓）**：内屏由独显输出（2560x1600@240Hz，NullMoth `NVRM/NVAccel/NVRMFB`），
+  而本机固件 DSDT 里**完全没有 `_BCM`/`_BQC` 背光方法**，`GFX0`（核显）下没有显示子设备，
+  全局 `BRTN` 方法指向不存在的 `DD1F/DD2F`。常规"SSDT-PNLF + WhateverGreen"那套不适用，
+  亮度只能从独显驱动栈或 EC 走；继续查用 `亮度诊断.command`。
+- **USB 左侧口读不出 U 盘（已解决，见下面的"深夜更新"）**：macOS 下只有两个 xHCI —— `\_SB.PC02.XHCI`
+  （被 SSDT 改名 `XHC2`，PCH 主控；USB2 = 端口 1–14，USB3(SS) = 17–26）与
+  `\_SB.PC00.TXHC`（USB4/雷电4 控制器，只有 3 个端口）。macOS 每个控制器只有 **15 个端口**额度，
+  17–26 的 SuperSpeed 端口够不着 —— 这正解释了"雷电口认 U 盘、左侧口不认"。
+  取证脚本 `USB诊断.command`；开关是 `Kernel>Quirks>XhciPortLimit`（**现已打开**）。
+
+### 2026-10-16 深夜 —— 两项都有结果了（重要更新）
+
+**1. USB：`Kernel>Quirks>XhciPortLimit = true` 在本机 Sequoia 上确实生效**
+
+- 实测：打开这个开关后重启，**左侧 USB-A / 左侧 Type-C / 雷电4 全部能正确识别 USB 3.0 设备**
+  （用户实测结论）。之前左侧 USB-A 连 U 盘都认不到、Type-C 只能跑 480 Mbps 的问题随之消失。
+- 这把之前的判断修正了一部分：原来写"17–26 号 SuperSpeed 端口超出 macOS 15 端口上限、
+  没有绕过的办法"，实际上 OpenCore 的这个补丁在本机 **是有效的**（`XhciPortLimit` 会给
+  `AppleUSBXHCI` / `AppleUSBXHCIPCI` / `IOUSBHostFamily` 打补丁、移除 15 端口上限）。
+  仍然保持 **`UTBMap.kext` 不动**（26 + 26 + 3 个端口的映射现在反而都派上用场了）。
+- 已把 `XhciPortLimit = true` 固化进三份 config，改动前的备份是
+  `*.before-xhciportlimit-20261016`（哈希见 8.1 表）。
+
+**2. Wi-Fi：这一版启动里 扫描 + 关联 + DHCP + 上网全通了**
+
+证据（2026-10-16 00:20–00:25 的采集）：
+
+- `system_profiler` 里出现 `Local Wi-Fi Networks:` 段（能看到 5GHz / ch36 的邻网）→ **扫描有结果**
+- `wdutil info`：`SSID`/`BSSID` 有值、`RSSI -33 dBm`、`Tx Rate 58 Mbps`、`PHY Mode 11n`、
+  `NSS 2`、`Security WPA2 Personal`、`Channel 2g1/20`
+- 拿到地址：`IPv4 10.185.13.247`（路由器 `10.185.13.63`）、IPv6 全局地址若干、`Apple: Reachable`
+- 同时段抓的 Wireless Diagnostics 包里 `diagnostics-connectivity.txt` 显示 **00:21:30 时还没通**
+  （ping DNS 失败），说明这次是"先扫描、再连上"的正常过程；前几次开机扫不到，与 EFI 无关
+  （同样的 config 在这几次都一样），属于上游所说的**扫描不稳定**。
+- 遇到扫不到时的处置：重启、或在 Wi-Fi 菜单里关一下再开；要留证据就跑 `扫描监视.command`。
 
 ---
 
@@ -39,7 +103,7 @@ EFI-Y9000P-2025-U9-275HX-78WW\
 | 独显 | NVIDIA（PCI `10de:2f58`），由 NullMoth 驱动套件驱动 |
 | 核显 | Intel `8086:7d67`，**未驱动**（没有 framebuffer/加速） |
 | 有线网卡 | Intel Ethernet Controller **I226-V**（`8086:125c` 等），驱动 `AppleIGC`，`en0` built-in |
-| 无线网卡 | **没有驱动**（EFI 里无任何无线 kext，系统里也没有 `IO80211` 实例） |
+| 无线网卡 | Intel **BE200**（`8086:272b`，ACPI `\_SB.PC02.RP08`）—— **已驱动**（2026-10-16）：`AirportItlwm`(Ventura/BE200 版) + `IOSkywalkFamily` + `IO80211FamilyLegacy` + OCLP-Mod 根补丁，扫不到网络时用「其他网络…」手填 SSID，见 6.1 节 |
 | 声卡 | Intel HDA 控制器 `8086:7f50`（ACPI `\_SB.PC02.HDAS`）+ Realtek ALC287 codec |
 | 触摸板 | Goodix **GXTP5100**（I2C，挂在 `\_SB.PC02.I2C1`） |
 | 键盘 | 真 PS/2（`PNP0303`） |
@@ -82,14 +146,14 @@ BIOS 版本 78WW 是本机实测可用的版本；换别的 BIOS 版本请重新
 | 摄像头 | 系统原生 UVC | ioreg `Integrated Camera@14b00000` + `UVCAssistant` 进程 |
 | 安卓 USB 网络共享 | `HoRNDIS 9.2` | 已加载（无线没驱动时的上网备选） |
 | 内存 / 平台伪装 | `RestrictEvents 1.1.7`、`AMFIPass 1.4.1`、`AppleMCEReporterDisabler 1.2`、`CpuTscSync 1.1.3` | 已加载 |
-| 声卡 | AppleALC | 已加载 |
+| 声卡（内置扬声器 + 内置麦克风） | `AppleALC 1.9.9` 驱动原版 `AppleHDA`，layout 13 | 2026-10-14 实测：扬声器出声、内置麦克风可用（注入见 5.6 / 6.2 节） |
 
 ### 3.2 没有驱动 / 有问题
 
 | 设备 | 状态 | 说明 |
 |---|---|---|
-| **无线网卡** | **完全没驱动** | EFI 里既无 `AirportItlwm` 也无 `itlwm`；系统里 `IO80211` 0 命中。见第 6.1 节 |
-| **声卡（内置扬声器/耳机）** | **有声音，但声音过小** | 没有音频功放芯片AW88399驱动 |
+| **无线网卡（BE200）** | **已修复（2026-10-16）** | EFI 里注入了 `AirportItlwm` + `IOSkywalkFamily` + `IO80211FamilyLegacy`，系统侧再跑一次 OCLP-Mod 根补丁即可。见第 6.1 节。遗留：只有 11ac（2.4/5GHz），没有 6GHz/隔空投送，扫描偶有不稳 |
+| **扬声器音量偏小** | **缺 AW88399 功放驱动**（不在 EFI 内） | 左右声道各一颗 Awinic 智能功放（ACPI `\_SB.PC02.I2C2.SPKR`，`_HID = AWDZ8399`，I2C2 上 `0x34`/`0x35`），没有驱动就停在上电默认的低增益状态。macOS 无此驱动；Linux 需板级驱动 + ACF 固件。见第 6.2 节与 |
 | 核显（`8086:7d67`） | 未驱动 | 没注入 `ig-platform-id`，`IONDRVFramebuffer` 实例 0；内屏走独显 |
 | 独显（NVIDIA） | 只有 NullMoth 这套（framebuffer + Metal 翻译层），**不是原生加速** | 开机那 ~98 秒就是它的代价，见第 4 节 |
 | 睡眠 / 唤醒 | **未测试** | 需要实测（合盖、手动睡眠、唤醒、唤醒后触摸板/键盘/网卡是否恢复） |
@@ -155,7 +219,13 @@ BIOS 版本 78WW 是本机实测可用的版本；换别的 BIOS 版本请重新
 
 ### 5.2 Kernel 层（kext 与内核补丁）
 
-**`Kernel>Add`（33 条，启用 29 条；下面列的是可见的 kext 与版本，标 ★ 的是被关掉的 4 条）**
+**`Kernel>Add`（36 条，启用 32 条；下面列的是可见的 kext 与版本，标 ★ 的是被关掉的 4 条）**
+
+> 2026-10-16 新增的三条（插在列表最前面，`MinKernel = 23.0.0` 的两条只在 Sonoma 及更新系统加载）：
+> `IOSkywalkFamily.kext`（OCLP-Mod payload 1.2.0）、`IO80211FamilyLegacy.kext`（1.0.0）、
+> `AirportItlwm.kext`（zxystd itlwm issue #955 的 Ventura/BE200 二进制，`IOPCIPrimaryMatch` 含
+> `0x272b8086`，二进制 SHA256 `b4555bd8…f810b7`）。前两个 kext 与 OCLP-Mod 3.1.9 自带 payload
+> **逐字节一致**。
 
 ```
 Lilu 1.7.3                 VirtualSMC 1.3.9             WhateverGreen 1.7.2
@@ -177,6 +247,9 @@ VoodooI2CHID 1.0           VoodooPS2Controller 2.3.8 (+ VoodooPS2Keyboard 2.3.8)
 每超时一次向屏幕打一行 `Timed out on input stream 1.`。
 
 **`Kernel>Block`**：`com.apple.iokit.IONDRVSupport`（`Strategy = Exclude`），**当前 `Enabled = false`**。
+2026-10-16 另加一条：`com.apple.iokit.IOSkywalkFamily`（`Strategy = Exclude`、`MinKernel = 23.0.0`、**启用**），
+用来屏蔽系统自带的 `IOSkywalkFamily`，改用 EFI 注入的 1.2.0（`IO80211FamilyLegacy` 依赖它）。
+（注意：`不带NVDIA驱动修改项EFI` 那份原来的 `Block` 是空数组，本次只加了这一条。）
 厂商安装器的规则：内屏由独显推画面时可以打开它，防止固件 framebuffer 抢走 display index 0；
 内屏走 Intel 核显 + 固件 framebuffer 时打开会黑屏。现在这个位置属于"安全的一侧"。
 
@@ -220,8 +293,10 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 
 ```
 -v debug=0x100 keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4
--nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=11
+-nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13
 ```
+
+（`不带NVDIA驱动修改项EFI` 那份的 boot-args 与上面相同，只是开头没有 `-v`。）
 
 | 参数 | 含义 |
 |---|---|
@@ -230,13 +305,13 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 | `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth` | NullMoth NVIDIA 驱动的四项：帧缓冲 / 加速 / 4 个显示头 / 关闭 KMS 平滑 |
 | `amfi_get_out_of_my_way=0x1 amfi=0x80` | 放宽 AMFI（配合 `AMFIPass.kext`，让第三方/未签名 kext 能加载） |
 | `ipc_control_port_options=0` | 解决部分机器的 IPC 端口问题 |
-| `alcid=11` | AppleALC 用 layout-id = 11（声卡，见第 6.2 节） |
+| `alcid=13` | AppleALC 用 layout 13（声卡，2026-10-14 起生效，见第 6.2 节） |
 
 注意：`NVRAM>Delete` 列表里**包含 `boot-args`**，也就是每次开机都由 config 重写这串参数；
 如果你在 macOS 里用 `nvram boot-args=...` 改，重启就没了，要么改 config，要么把它从 `Delete` 里去掉。
 
-**其它 NVRAM 项**：`csr-active-config = 0x0A43`（SIP 放宽：未签名 kext、文件系统、NVRAM、
-未批准 kext、未认证 root 五项放开，其余保持开启）、`run-efi-updater = No`、
+**其它 NVRAM 项**：`csr-active-config = 0xFF0F0000`（2026-10-16 由 `0x0A43` 改来；这是 OCLP-Mod
+打根补丁要求的"SIP 基本全开解锁"档，含 `CSR_ALLOW_UNAUTHENTICATED_ROOT` 等 12 位）、`run-efi-updater = No`、
 `revcpu = 1` / `revcpuname = "Intel(R) Core(TM) Ultra 9 275HX"` / `revpatch = sbvmm,cpuname`
 （配合 RestrictEvents，用于显示正确的 CPU 名称、屏蔽机型升级提示）、
 `bluetoothExternalDongleFailed` / `bluetoothInternalControllerInfo`（蓝牙状态变量，会被 Delete 清掉后重写）。
@@ -245,9 +320,12 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 
 | 路径 | 属性 | 状态 |
 |---|---|---|
-| `#PciRoot(0x80)/Pci(0x1f,0x3)` | `layout-id = 13` | **被 `#` 注释掉 = 不生效**（OpenCore 把 `#` 开头的键当注释丢弃） |
+| `PciRoot(0x80)/Pci(0x1f,0x3)` | `layout-id = <0D000000>`、`alc-layout-id = <0D000000>`（都是 Data，= 13） | **生效**：2026-10-14 起扬声器与内置麦克风实测可用 |
 | `PciRoot(0x0)/Pci(0x2,0x0)` | （空，无属性） | 占位 |
 | `PciRoot(0x0)/Pci(0x6,0x0)/Pci(0x0,0x0)` | `acpi-wake-type = 1` | 生效（唤醒类型） |
+
+> 以前这里写的是 `#PciRoot(0x80)/Pci(0x1f,0x3)`（空格 `#`）——OpenCore 把 `#` 开头的键当注释丢弃，
+> 所以那条注入等于没写，真正生效的只有 `alcid=11`。2026-10-14 已改成上面的真实注入。
 
 ### 5.7 SMBIOS / PlatformInfo（机型伪装）
 
@@ -261,7 +339,7 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 | `ProcessorType` | 3841，`SpoofVendor = true`，`UpdateSMBIOSMode = Custom` |
 
 > **这三码一 UUID 一 ROM 是这一台机器的身份**。换机器/外传前必须用 GenSMBIOS 重新生成，
-> 并把 `ROM` 换成目标机自己的网卡 MAC（第 9 节）。
+> 并把 `ROM` 换成目标机自己的网卡 MAC（第 7 节第 1 条）。
 
 ### 5.8 Misc 层
 
@@ -269,34 +347,94 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
 |---|---|
 | `Security` | `SecureBootModel = Disabled`、`Vault = Optional`、`ScanPolicy = 0`、`DmgLoading = Signed`、`BlacklistAppleUpdate = true`、`ExposeSensitiveData = 7`、`EnablePassword = false` |
 | `Boot` | `Timeout = 5`、`ShowPicker = true`、`PickerMode = External`、`PickerAttributes = 17`、`HideAuxiliary = false`、`LauncherOption = Disabled` |
-| `Debug` | `AppleDebug = true`、`ApplePanic = true`、`DisableWatchDog = true`、`DisplayLevel = 2147483650`、`LogModules = *`、`Target = 3`（都是排错档，日常可关） |
+| `Debug` | `AppleDebug = true`、`ApplePanic = true`、`DisableWatchDog = true`、`DisplayLevel = 2147483650`、`LogModules = *`、**`Target = 67`**（2026-10-16 由 `3` 改来：3 + 0x40，多了"写日志文件"，每次启动会在 `EFI\OC\Logs\` 生成 `opencore-*.txt`；不想留日志就改回 3） |
 
 ---
 
 ## 6. 自查到的问题：怎么继续查
 
-### 6.1 无线网卡不能工作
+### 6.1 无线网卡（Intel BE200）—— 已修复（2026-10-16）
 
-**现状**：这份 EFI 里**没有任何无线驱动**（没有 `AirportItlwm`，也没有 `itlwm`），系统 ioreg 里
-`IO80211` 0 命中。macOS 对绝大多数 Intel 无线网卡没有原生支持，而较新的 BE200/BE201 目前基本
-没有可用的第三方驱动。
+**现在的状态**：能用。2026-10-15 夜里实测（有日志）：
 
-**三条路**：
+- `kextstat`：`com.apple.iokit.IOSkywalkFamily 1.0`、`com.apple.iokit.IO80211FamilyLegacy 1200.12.2b1`、
+  `com.zxystd.AirportItlwm 2.3.0` 三个都已加载
+- `system_profiler SPAirPortDataType`：`en5` = `Card Type: Wi-Fi (0x8086, 0xF4)`、
+  `Firmware Version: itlwm: 2.3.0 fw: 90.38c93dbc.0`、`Country Code: CN`、
+  信道表完整（2.4G 1–13、5G 36–177）
+- `/System/Library/CoreServices/oclp-mod.plist` 里已写入 `Intel无线网卡` 补丁集：
+  `wifip2pd`（覆盖）、`IO80211.framework` + `WiFiPeerToPeer.framework`（合并），来源 `13.7.2-24`
 
-1. **换一张 macOS 原生支持的卡**（最稳）：BCM94360NG / BCM94352Z 等 M.2 卡（注意天线与尺寸，
-   以及是否需要 `AirportBrcmFixup`）。
-2. **Intel 卡装 `AirportItlwm`**（要与 macOS 版本对号）或 `itlwm` + HeliPort（走以太网模拟）。
-   只对部分世代有效；BE200 基本没戏，先查清你的卡具体型号再决定。
-3. **不用无线**：有线网卡 `en0`（Intel I226-V）是好的；另外 `HoRNDIS.kext` 已经加载，
-   安卓手机 USB 网络共享可以直接用（或 USB 网卡）。
+**为什么以前不行**：官方 OCLP 对 BE200 支持不完整，而 Sequoia 里已经没有
+`IO80211FamilyLegacy.kext`（只剩新的 `IO80211Family` + `IOSkywalkFamily`），
+而能带 BE200 的 `AirportItlwm` 是 **Ventura 版**、必须挂在老的 `IO80211FamilyLegacy` 上。
 
-**相关文件**：`SSDT-Y9000P_AXI10-Disable_Network_RP08.aml` 是屏蔽 `\_SB.PC02.RP08`（无线网卡所在
-根端口）用的，当前 `Enabled = false`（不加载）。如果确认无线就在 RP08 上且暂时不用，
-可以打开它减少一次无用的设备枚举；反过来说，**如果要在 RP08 上换新卡，必须保持关闭**。
+**修好它需要两半，缺一不可**：
 
-### 6.2 声卡能工作但声音过小
+1. **EFI 侧（已同步进这两份 EFI）**：
+   - `Kernel>Add` 最前面加三条：`IOSkywalkFamily.kext`(1.2.0) / `IO80211FamilyLegacy.kext`(1.0.0) /
+     `AirportItlwm.kext`（zxystd itlwm issue #955 的 Ventura/BE200 二进制）
+   - `Kernel>Block` 加 `com.apple.iokit.IOSkywalkFamily`（`Exclude`、`MinKernel 23.0.0`、启用）
+   - `csr-active-config` 改成 `0xFF0F0000`；`Misc>Debug>Target` 改成 `67`
+   - ACPI 里的 `SSDT-Disable_Network_RP08.aml` **必须保持 `Enabled = false`**（它就是用来把
+     `\_SB.PC02.RP08` 上的 BE200 藏起来的）
+2. **系统侧**：装 **OCLP-Mod 3.1.9**（不是官方 OCLP！）+ `AutoPkg-Assets.pkg`，
+   打开后跑 `Post-Install Root Patch`，列表里会出现 **「网络：Intel无线网卡」**，打完重启。
+   改 Windows 前的准备和安装步骤见 `Wi-Fi修复-所需文件\读我-先看这个.txt`。
 
-- 没有`AW88399`音频功放的驱动
+**为什么 OCLP-Mod 认得 BE200**：它的 `pci_data.py` 把 `0x272B` 写进了 Intel 无线支持表
+（注释 "Intel Wi-Fi 7(802.11be) AX1775*/AX1790*/BE20*/BE401/BE1750*"），
+这条从 **2.4.7（2024-12）** 就存在，所以 3.1.9 天然支持；根补丁资产在安装包里自带，
+**全程不需要联网、也不需要 KDK**（`ModernWireless.requires_kernel_debug_kit() = False`）。
+
+**已知限制（上游就是这样）**：只有 11ac（2.4/5GHz），**没有 6GHz**、没有隔空投送/AWDL；
+扫描有时不稳，扫不到网络列表时用「其他网络…(Join Other Network)」手填 SSID + 密码。
+
+> ⚠️ 两份变体的一个差异（本次已修）：`不带NVDIA驱动修改项EFI` 里的
+> `SSDT-Disable_Network_RP08.aml` 原本是 **`Enabled = true`**（把 BE200 藏起来用的），
+> 开着的话 Wi-Fi 永远不可能工作。2026-10-16 已改成 `false`。
+
+**相关文件**：`SSDT-Disable_Network_RP08.aml`（两份变体各自的名字带/不带 `Y9000P_AXI10-` 前缀）
+是屏蔽 `\_SB.PC02.RP08`（无线网卡所在根端口）用的，**当前两份都是 `Enabled = false`**。
+要用 BE200 就必须保持关闭；只有"这块口上暂时不装任何卡"时才考虑打开，少一次无用枚举。
+
+### 6.2 声卡（已修复：layout 13）
+
+**现状**：内置扬声器出声、内置麦克风可用，走 layout 13（`alcid=13` + `layout-id`/`alc-layout-id`
+都注入 13）。下面几条是当时的排查记录，保留备查。
+
+- 声卡从 ioreg 看是"认到了"的：`HDEF@1F,3` → `IOHDACodecDevice@1F,3,0`（registered/matched/active）
+  → `AppleHDACodecGeneric` → `AppleHDAStream`；控制器在 ACPI 路径 `\_SB.PC02.HDAS`
+  （PCI `pcidebug = 128:31:3`，即 bus 0x80）。
+- **codec 型号的依据是 Windows，不是那份 macOS ioreg**（2026-10-14 更正）：Windows 设备库里这块
+  codec 枚举为 `INTELAUDIO\FUNC_01&VEN_10EC&DEV_0287&SUBSYS_17AA3906`（"Realtek(R) Audio"），
+  `0x10EC0287` → ALC287。macOS 侧那份 ioreg 里的 `HDAConfigDefault` 是 **AppleALC 自带的支持表**
+  （663 条，`Codec=`/`CodecID=` 描述的是配置数据的来源机型），**不能用来判断总线上的 codec 是谁**；
+  macOS 侧真正读 codec 身份的地方是 codec 节点上的 `IOHDACodecVendorID` / `IOHDACodecRevisionID`。
+- **当时**生效的注入只有 `boot-args` 里的 `alcid=11`；`DeviceProperties` 里那条
+  `#PciRoot(0x80)/Pci(0x1f,0x3) → layout-id 13` 是注释状态（等于关闭）——这就是"没声音"的原因，
+  2026-10-14 改成真实注入 + `alcid=13` 之后，扬声器与内置麦克风同时通了。
+- **遗留：外放音量偏小 = 缺功放驱动，不是硬件限制、也不在 EFI 里。** 本机实测（注册表 + DSDT，
+  2026-10-14）：左右声道各一颗 Awinic 智能功放，ACPI 节点 `\_SB.PC02.I2C2.SPKR`，
+  `_HID = AWDZ8399`（AW88399 系列），`_CRS` 指向 I2C2 上的 `0x35` 与 `0x34`；
+  Windows 侧由 `AwinicChip`（`AwinicSmartKAmps.sys`）驱动并加载厂商配置 `AWDZ8399.bin`。
+  没有驱动去写它的音量/使能寄存器，功放就停在上电默认状态 → 有声音但很小，Linux 同理
+  （主线有 `snd_soc_aw88399`，但需要板级驱动 + ACF 固件才上电）。细节、
+  证据摘录与 Linux 侧查证命令见 `E:\macos\AW88399-功放-证据与后续-2026-10-14.md`。
+  要在 macOS 上解决，等于自己写一个 I2C 功放驱动。
+
+**当时的排查步骤**（保留备查，每次只改一个值）：
+
+1. 改 `boot-args` 的 `alcid=`。AppleALC 1.9.9 里 ALC287 **只有 3 个 layout：`11` / `13` / `21`**
+   （11 通用、13 是 Legion 5 Pro R9000P、21 是 Yoga Slim 7；Hackintool 与 RapidEFI 的数据库也是这三个），
+   所以别去试 66/98。每次重启后用 `ioreg -l | grep -i -E 'layout-id|IOHDACodecVendorID'` 看变化。
+2. `DeviceProperties` 里那条恢复成真实注入（去掉 `#`）即可 —— **路径 `PciRoot(0x80)/Pci(0x1f,0x3)`
+   是对的**（ioreg `pcidebug = 128:31:3`，bus 0x80），值要写成 Data（`<0D000000>`），
+   也可以同时给 `alc-layout-id`。
+3. 判断方向：如果**外放没声但耳机有声**，那是内置功放（smart amp）那一段，需要专门处理；
+   如果**耳机也没声**，先确认 `IOHDACodecVendorID` 读出来确实是 `0x10EC0287`。
+4. 三个现成 layout 都不行的话，下一步是提一份 codec dump（Linux 启动盘 `/proc/asound/card0/codec#0`）
+   来比对真实 Pin Configuration；细节见 `E:\macos\声卡-layout-id-修改说明-2026-10-14.md`。
 
 ---
 
@@ -318,3 +456,25 @@ CPUID 特征位伪装成 macOS 认得的型号（配合 `ProvideCurrentCpuInfo`�
    属于降低系统安全性，请知悉；`Misc>Debug` 与 `AppleDebugLog` 是排错档，日常可以关掉。
 6. 本文里的"未驱动/待确认"结论，都是基于 2026-10-13 那次开机的 `ioreg` 与内核日志；
    硬件或 BIOS 改动后请重新验证。
+
+---
+
+### 8. Wi-Fi 修复用到的文件（`Wi-Fi修复-所需文件\`）
+
+| 文件 | 用途 |
+|---|---|
+| `OCLP-Mod.pkg` (767 MB) | OCLP-Mod **3.1.9**（laobamac 版），文件大小与 GitHub release 资产一致 |
+| `AutoPkg-Assets.pkg` (767 MB) | 同版本离线补丁资产（`payloads.dmg` / `Universal-Binaries.dmg` 就在包里的 app 内） |
+| `Ventura.zip` (2.4 MB) | BE200 驱动原件（zxystd issue #955 的 Ventura 包），备份用 |
+| `读我-先看这个.txt` | 上机步骤（拷 EFI → 装 OCLP-Mod → 打根补丁 → 测 Wi-Fi） |
+| `BE200-诊断.command` | 一键收集 Wi-Fi/kext/根补丁/EFI 日志 |
+| `BE200-手动连WiFi.command` | 扫描不工作时手动指定 SSID 连接 |
+| `亮度诊断.command` | 内屏亮度链路诊断（本机内屏走 NVIDIA，目前无亮度通道） |
+| `USB诊断.command` | USB 端口诊断（左侧口读不出 U 盘那个问题的取证脚本） |
+
+### 8.4 独显（NVIDIA）驱动从哪来
+
+第 1、3 节说的 NullMoth 驱动**不在 EFI 里**：`NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 装在
+`/Library/Extensions`，`NVMTLDriver` 在 `/Library/GPUBundles`，要用厂商安装器在目标系统上
+另装一遍。EFI 侧只提供 `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth` 这组 boot-args，以及
+`Misc>Tools` 里两个 `NullMothSafe.efi` 菜单项（"下次开机卸驱动" / "这次不带驱动启动"）。

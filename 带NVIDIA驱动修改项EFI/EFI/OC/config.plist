@@ -56,14 +56,6 @@
                 </dict>
                 <dict>
                     <key>Comment</key>
-                    <string>SSDTTime: hides the firmware RHUB, renames \_SB.PC02.XHCI to XHC2 (matches UTBMap)</string>
-                    <key>Enabled</key>
-                    <true/>
-                    <key>Path</key>
-                    <string>SSDT-Y9000P_AXI10-USB-Reset.aml</string>
-                </dict>
-                <dict>
-                    <key>Comment</key>
                     <string>SSDTTime: XOSI for the _OSI rename</string>
                     <key>Enabled</key>
                     <true/>
@@ -93,14 +85,6 @@
                     <false/>
                     <key>Path</key>
                     <string>SSDT-Disable_Network_RP08.aml</string>
-                </dict>
-                <dict>
-                    <key>Comment</key>
-                    <string>Touchpad: GXTP5100 (I2C 0x5D) as child of PC02.I2C1 / PC00.I2C1</string>
-                    <key>Enabled</key>
-                    <true/>
-                    <key>Path</key>
-                    <string>SSDT-Y9000P_AXI10-TPD0-ARL.aml</string>
                 </dict>
                 <dict>
                     <key>Comment</key>
@@ -431,32 +415,7 @@
                 </dict>
             </array>
             <key>Patch</key>
-            <array>
-                <dict>
-                    <key>Arch</key>
-                    <string>Any</string>
-                    <key>Comment</key>
-                    <string>macOS to hacOS</string>
-                    <key>Count</key>
-                    <integer>1</integer>
-                    <key>Enabled</key>
-                    <false/>
-                    <key>Find</key>
-                    <data>bWFjT1M=</data>
-                    <key>Identifier</key>
-                    <string>Apple</string>
-                    <key>Limit</key>
-                    <integer>0</integer>
-                    <key>Mask</key>
-                    <data></data>
-                    <key>Replace</key>
-                    <data>aGFjT1M=</data>
-                    <key>ReplaceMask</key>
-                    <data></data>
-                    <key>Skip</key>
-                    <integer>0</integer>
-                </dict>
-            </array>
+            <array/>
             <key>Quirks</key>
             <dict>
                 <key>AllowRelocationBlock</key>
@@ -535,6 +494,60 @@
         <dict>
             <key>Add</key>
             <array>
+                <dict>
+                    <key>Arch</key>
+                    <string>x86_64</string>
+                    <key>BundlePath</key>
+                    <string>IOSkywalkFamily.kext</string>
+                    <key>Comment</key>
+                    <string>OCLP-Mod Wi-Fi payload 1.2.0, required by IO80211FamilyLegacy on Sonoma and newer</string>
+                    <key>Enabled</key>
+                    <true/>
+                    <key>ExecutablePath</key>
+                    <string>Contents/MacOS/IOSkywalkFamily</string>
+                    <key>MaxKernel</key>
+                    <string></string>
+                    <key>MinKernel</key>
+                    <string>23.0.0</string>
+                    <key>PlistPath</key>
+                    <string>Contents/Info.plist</string>
+                </dict>
+                <dict>
+                    <key>Arch</key>
+                    <string>x86_64</string>
+                    <key>BundlePath</key>
+                    <string>IO80211FamilyLegacy.kext</string>
+                    <key>Comment</key>
+                    <string>OCLP-Mod Wi-Fi payload 1.0.0, the stack the Intel BE200 driver links against</string>
+                    <key>Enabled</key>
+                    <true/>
+                    <key>ExecutablePath</key>
+                    <string>Contents/MacOS/IO80211FamilyLegacy</string>
+                    <key>MaxKernel</key>
+                    <string></string>
+                    <key>MinKernel</key>
+                    <string>23.0.0</string>
+                    <key>PlistPath</key>
+                    <string>Contents/Info.plist</string>
+                </dict>
+                <dict>
+                    <key>Arch</key>
+                    <string>x86_64</string>
+                    <key>BundlePath</key>
+                    <string>AirportItlwm.kext</string>
+                    <key>Comment</key>
+                    <string>Intel BE200 Wi-Fi driver, zxystd itlwm issue 955 Ventura build (0x272b8086)</string>
+                    <key>Enabled</key>
+                    <true/>
+                    <key>ExecutablePath</key>
+                    <string>Contents/MacOS/AirportItlwm</string>
+                    <key>MaxKernel</key>
+                    <string></string>
+                    <key>MinKernel</key>
+                    <string></string>
+                    <key>PlistPath</key>
+                    <string>Contents/Info.plist</string>
+                </dict>
                 <dict>
                     <key>Arch</key>
                     <string>Any</string>
@@ -1148,6 +1161,38 @@
                     <key>Strategy</key>
                     <string>Exclude</string>
                 </dict>
+                <dict>
+                    <key>Arch</key>
+                    <string>x86_64</string>
+                    <key>Comment</key>
+                    <string>Block stock IOSkywalkFamily so the injected legacy one is used</string>
+                    <key>Enabled</key>
+                    <true/>
+                    <key>Identifier</key>
+                    <string>com.apple.iokit.IOSkywalkFamily</string>
+                    <key>MaxKernel</key>
+                    <string></string>
+                    <key>MinKernel</key>
+                    <string>23.0.0</string>
+                    <key>Strategy</key>
+                    <string>Exclude</string>
+                </dict>
+                <dict>
+                    <key>Arch</key>
+                    <string>x86_64</string>
+                    <key>Comment</key>
+                    <string></string>
+                    <key>Enabled</key>
+                    <true/>
+                    <key>Identifier</key>
+                    <string>com.apple.driver.AppleEthernetRL</string>
+                    <key>MaxKernel</key>
+                    <string></string>
+                    <key>MinKernel</key>
+                    <string></string>
+                    <key>Strategy</key>
+                    <string>Exclude</string>
+                </dict>
             </array>
             <key>Emulate</key>
             <dict>
@@ -1165,68 +1210,7 @@
             <key>Force</key>
             <array/>
             <key>Patch</key>
-            <array>
-                <dict>
-                    <key>Arch</key>
-                    <string>x86_64</string>
-                    <key>Base</key>
-                    <string></string>
-                    <key>Comment</key>
-                    <string>1401 fallback | Visual | thread_quantum_expire, thread_unblock, thread_invoke | Remove non-monotonic time panic | 12.0+</string>
-                    <key>Count</key>
-                    <integer>3</integer>
-                    <key>Enabled</key>
-                    <false/>
-                    <key>Find</key>
-                    <data>SAAAAAIAAEgAAFgAAAAPAAAAAAA=</data>
-                    <key>Identifier</key>
-                    <string>kernel</string>
-                    <key>Limit</key>
-                    <integer>0</integer>
-                    <key>Mask</key>
-                    <data>/wAAD/////8AAP8AAAD/AAAAAAA=</data>
-                    <key>MaxKernel</key>
-                    <string>25.99.99</string>
-                    <key>MinKernel</key>
-                    <string>21.0.0</string>
-                    <key>Replace</key>
-                    <data>AAAAAAAAAAAAAAAAAABmkGaQZpA=</data>
-                    <key>ReplaceMask</key>
-                    <data>AAAAAAAAAAAAAAAAAAD///////8=</data>
-                    <key>Skip</key>
-                    <integer>0</integer>
-                </dict>
-                <dict>
-                    <key>Arch</key>
-                    <string>x86_64</string>
-                    <key>Base</key>
-                    <string></string>
-                    <key>Comment</key>
-                    <string>1401 fallback | Visual | thread_invoke, thread_dispatch | Remove non-monotonic time panic | 12.0+</string>
-                    <key>Count</key>
-                    <integer>2</integer>
-                    <key>Enabled</key>
-                    <false/>
-                    <key>Find</key>
-                    <data>SAAAgAQAAA8AAAAAAA==</data>
-                    <key>Identifier</key>
-                    <string>kernel</string>
-                    <key>Limit</key>
-                    <integer>0</integer>
-                    <key>Mask</key>
-                    <data>SAAA8P////8AAAAAAA==</data>
-                    <key>MaxKernel</key>
-                    <string>25.99.99</string>
-                    <key>MinKernel</key>
-                    <string>21.0.0</string>
-                    <key>Replace</key>
-                    <data>AAAAAAAAAGaQZpBmkA==</data>
-                    <key>ReplaceMask</key>
-                    <data>AAAAAAAAAP///////w==</data>
-                    <key>Skip</key>
-                    <integer>0</integer>
-                </dict>
-            </array>
+            <array/>
             <key>Quirks</key>
             <dict>
                 <key>AppleCpuPmCfgLock</key>
@@ -1274,7 +1258,7 @@
                 <key>ThirdPartyDrives</key>
                 <false/>
                 <key>XhciPortLimit</key>
-                <false/>
+                <true/>
             </dict>
             <key>Scheme</key>
             <dict>
@@ -1490,7 +1474,7 @@
                     <key>boot-args</key>
                     <string>-v debug=0x100 keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13</string>
                     <key>csr-active-config</key>
-                    <data>QwoAAA==</data>
+                    <data>/w8AAA==</data>
                     <key>prev-lang:kbd</key>
                     <data></data>
                     <key>run-efi-updater</key>
