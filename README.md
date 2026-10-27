@@ -112,6 +112,8 @@ wdutil info                                 # SSID / BSSID / RSSI / 信道
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX3_20261027` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+
 已知限制（上游就是这样）：**6 GHz 目前只做到被动扫描与上报，实际 6 GHz 关联未验证**；纯 **WPA3-SAE 未实现**（WPA2-Personal/Enterprise 可连）；**Wi-Fi 7 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
 
 ### 3.2 声卡（ALC287 + 双 AW88399）
@@ -307,7 +309,8 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 - [Acidanthera](https://github.com/acidanthera)：OpenCore、Lilu、VirtualSMC、WhateverGreen、AppleALC、VoodooInput
 - [VoodooI2C](https://github.com/VoodooI2C/VoodooI2C)：I2C 触摸板与设备 nub
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
-- [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：AirportItlwm（BE200）
+- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX3_20261027` 构建来源，尚未合并进上游主仓库）
+- [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
 - NullMoth 2.6.2：NVIDIA 驱动与工具链（本包不含驱动）
 - Linux 侧参考：[16iax10h-linux-sound-saga](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga)、[作者博客](https://www.wsjj.top/archives/176)
 

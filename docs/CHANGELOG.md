@@ -101,6 +101,7 @@
 ### 驱动
 
 - 换入新的 **`AirportItlwm-Sequoia-BE200.kext`（2.4.0 `_FIX3_20261027`，x86_64）**，替换旧构建。
+- **驱动来源**：<https://github.com/Ersiter/AirportItlwm-BE200> —— BE200 专用分支，目前为**内测阶段**，尚未合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应正式 release（所以上游主仓库看不到这版）。README 与 `THIRD-PARTY.md` 已补上该仓库链接。
 - 修复内容（来自驱动发布说明）：
   - **初始四次握手末包的发送与装钥时序** —— 之前表现为连上就掉、认证反复、DHCP 拿不到地址；
   - **离网时旧状态请求仍在执行** —— 切网/断网后的残留状态会让下一次关联失败。
