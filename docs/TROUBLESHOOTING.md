@@ -243,8 +243,30 @@ Kernel Extension Info: No Kext Loaded
 
 - 用 `NullMothSafe` 的“本次不加载”入口启动；
 - 确认 `PciRoot(0x0)/Pci(0x6,0x0)/Pci(0x0,0x0)` 的 `acpi-wake-type=1` 仍在；
-- 检查 `ResizeAppleGpuBars=0` 与 BIOS ReBAR 设置；
+- 检查 `ResizeAppleGpuBars=-1` 与 BIOS ReBAR 设置；
 - 不要在没有核显输出备份的情况下反复尝试。
+
+### 5.3 内屏亮度滑块是灰的
+
+本机内屏接在独显上，固件 DSDT 里只有一个空的 `_BCM` 桩，没有可用的背光方法，所以 SSDT-PNLF / WhateverGreen 那一套在这里不适用。
+
+修法就一个 boot-arg：
+
+```text
+nvrmacpibl=1
+```
+
+加上之后 NullMoth 的 NVKMS 会自己注册内屏背光，**亮度滑块和亮度键都会恢复**。注意两点：
+
+- **必须装了 NullMoth 驱动才有效**；没装驱动时这个参数不生效，滑块依旧是灰的；
+- NullMoth 只在这个参数存在时才去读 GPU 的 ACPI `_DSM` / `_DOD`（默认关闭，因为少数机器会在 GPU 启动阶段挂住）。**如果加了它之后开机卡在 GPU 启动阶段，把这个参数删掉**。
+
+验证：
+
+```sh
+nvram boot-args | grep -o 'nvrmacpibl=1'
+# 系统设置 → 显示器：亮度滑块可拖动；键盘亮度键有效
+```
 
 ---
 

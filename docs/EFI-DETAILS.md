@@ -484,7 +484,7 @@ EFI/
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1
+alcid=13 alcverbs=1 nvrmacpibl=1
 ```
 
 | 参数 | 作用 | 能否去掉 |
@@ -496,6 +496,7 @@ alcid=13 alcverbs=1
 | `nvaccel=1` | NullMoth 加速 | 同上 |
 | `nvfbheads=4` | NVIDIA 显示头数量 | 同上 |
 | `-nvkmsnosmooth` | NullMoth 关闭 KMS 平滑 | 同上 |
+| `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光（亮度滑块 + 亮度键恢复） | 只有装了 NullMoth 驱动才生效；**若加完卡在 GPU 启动阶段**，删掉它 |
 | `amfi_get_out_of_my_way=0x1` | AMFI 放行 | 注入未签名 kext 需要 |
 | `amfi=0x80` | AMFI 兼容位 | 同上 |
 | `ipc_control_port_options=0` | IPC 端口选项 | 建议保留 |

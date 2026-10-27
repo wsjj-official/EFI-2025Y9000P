@@ -70,7 +70,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | 3.5 mm 耳机口 | ⚠️ 未验证 | 本版未做插孔切换测试 |
 | HDMI / DP 音频 | ⚠️ 未验证 | 不属于本版声卡修复范围 |
 | 睡眠 / 唤醒 | ⚠️ 未验证 | 未做长时间睡眠测试 |
-| 内屏亮度调节 | ⚠️ 无通道 | 内屏走独显，固件 DSDT 里没有 `_BCM`/`_BQC`，常规 SSDT-PNLF 方案不适用 |
+| 内屏亮度调节 | ✅ 已恢复（需 NVIDIA 驱动） | 固件 DSDT 里只有空的 `_BCM` 桩，常规 SSDT-PNLF 不适用；加 **`nvrmacpibl=1`** 后由 NullMoth 的 NVKMS 自己注册内屏背光，滑块与亮度键都可用。**必须装了 NullMoth 驱动才生效**，没装驱动时滑块仍然是灰的 |
 | NVIDIA 独显 | ⚠️ 不在本 EFI | 需单独安装 NullMoth 2.6.2，见第 10 节 |
 | iServices | ⚠️ 需自行生成三码 | 发布包已清空 SMBIOS |
 
@@ -203,7 +203,7 @@ BIOS 版本 **78WW** 为本机实测可用版本；换 BIOS 版本请重新核�
 
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
-amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1
+amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1
 ```
 
 | 参数 | 作用 |
@@ -212,6 +212,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 | `keepsyms=1` | panic 时保留符号 |
 | `-vi2c-force-polling` | VoodooI2C 强制轮询，触摸板 / SPKR 枚举更稳 |
 | `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth` | NullMoth NVIDIA 帧缓冲/加速相关；未装驱动时无影响 |
+| `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光，**亮度滑块与亮度键恢复**；只在装了 NullMoth 驱动时生效。若加完卡在 GPU 启动阶段，删掉它 |
 | `amfi_get_out_of_my_way=0x1 amfi=0x80` | AMFI 放行，配合 AMFIPass 加载未签名 kext |
 | `ipc_control_port_options=0` | 规避部分 IPC 限制 |
 | `alcid=13` | AppleALC 使用 layout 13 |
@@ -249,6 +250,8 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 
 声卡 / Wi-Fi 修复与 NVIDIA 完全独立。
 
+> **内屏亮度也归 NVIDIA 驱动管**：本机内屏接在独显上，固件 DSDT 里只有一个空的 `_BCM` 桩，SSDT-PNLF 那套在这里没有意义。装上 NullMoth 驱动后，boot-args 里的 **`nvrmacpibl=1`** 会让 NVKMS 自己注册内屏背光，亮度滑块和亮度键就都能用（摘掉这个参数则滑块变灰）。如果加了它之后开机卡在 GPU 启动阶段，把它删掉即可——NullMoth 只在带这个参数时才去读 GPU 的 `_DSM`/`_DOD`。
+
 ---
 
 ## 11. 换机器 / 外传前必读
@@ -267,6 +270,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 - **2026-10-27 v1.0（本版）**：
   - **Wi-Fi 改为原生** `AirportItlwm-Sequoia-BE200 2.4.0`，**彻底移除 OCLP 依赖**（不再需要根补丁与 IOSkywalk 回移植）；
   - **外放修复**：`AW88399Driver 0.2` + 双 I2C 资源 `VoodooI2C` + `AppleALC 1.9.8` 共享 DAC，高音/低音同时工作；
+  - **内屏亮度恢复**：boot-args 增加 `nvrmacpibl=1`，由 NullMoth 的 NVKMS 注册内屏背光（需装 NVIDIA 驱动），亮度滑块与亮度键可用；
   - 修正 HDEF `layout-id` 的 8 字节 ASCII 写法错误；
   - 仓库重构为**单一 EFI**，删除旧的三份变体与 OCLP 相关文件，补齐文档与 `tools/check-audio.sh`；
   - 清空 SMBIOS 三码，便于外传。

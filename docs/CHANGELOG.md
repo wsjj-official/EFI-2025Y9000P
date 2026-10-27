@@ -83,3 +83,13 @@
 - **Wi-Fi（Intel BE200）已修复**：`AirportItlwm-Sequoia-BE200 2.4.0` 原生注入，不再需要 `IOSkywalkFamily` / `IO80211FamilyLegacy`，也不需要在系统侧安装 OCLP-Mod 或打 `Post-Install Root Patch`。
 - **声卡（ALC287 + 双 AW88399）已修复**：外放高音/低音同时工作，音量与静音正常。
 - **彻底移除对 OCLP 的依赖**：本包不含任何 OCLP/OCLP-Mod 组件，`csr-active-config` 只需 `0x0A43`。
+
+---
+
+## 2026-10-27 — 内屏亮度恢复
+
+- `boot-args` 增加 **`nvrmacpibl=1`**：由 NullMoth 的 NVKMS 自己注册内屏背光，**亮度滑块与键盘亮度键恢复可用**。
+  （参考同平台 Legion 5 15IAX10 + NullMoth 的验证结论：本机内屏走独显、固件 DSDT 里只有一个空的 `_BCM` 桩，SSDT-PNLF 方案不适用。）
+- **前提**：必须已安装 NullMoth 驱动；未装驱动时该参数不生效，滑块仍为灰色。
+- **回退**：NullMoth 只在此参数存在时才读 GPU 的 ACPI `_DSM` / `_DOD`（默认关闭，避免少数机器在 GPU 启动阶段挂住）。若加入后开机卡在 GPU 启动阶段，删掉该参数即可。
+- 同步更新：README（功能状态 / 启动参数 / NVIDIA 说明 / 更新记录）、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`（新增 5.3 内屏亮度）。
