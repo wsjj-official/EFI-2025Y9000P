@@ -93,3 +93,31 @@
 - **前提**：必须已安装 NullMoth 驱动；未装驱动时该参数不生效，滑块仍为灰色。
 - **回退**：NullMoth 只在此参数存在时才读 GPU 的 ACPI `_DSM` / `_DOD`（默认关闭，避免少数机器在 GPU 启动阶段挂住）。若加入后开机卡在 GPU 启动阶段，删掉该参数即可。
 - 同步更新：README（功能状态 / 启动参数 / NVIDIA 说明 / 更新记录）、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`（新增 5.3 内屏亮度）。
+
+---
+
+## 2026-10-27 晚 — Wi-Fi 驱动升级：修复 Wi-Fi 6 连接不稳，加入 6 GHz 支持
+
+### 驱动
+
+- 换入新的 **`AirportItlwm-Sequoia-BE200.kext`（2.4.0 `_FIX3_20261027`，x86_64）**，替换旧构建。
+- 修复内容（来自驱动发布说明）：
+  - **初始四次握手末包的发送与装钥时序** —— 之前表现为连上就掉、认证反复、DHCP 拿不到地址；
+  - **离网时旧状态请求仍在执行** —— 切网/断网后的残留状态会让下一次关联失败。
+- 保留 **6 GHz 被动扫描与结果上报**（`AirportItlwm-WCLScan6GHzMap`、`WCLChannels6GHz`、`HWScan6GHzCount`）。
+
+### 启动参数
+
+- 新增 **`itlwm_he=1`**：打开 HE / 802.11ax（Wi-Fi 6），也是 6 GHz（Wi-Fi 6E）能力集的入口。去掉会退回 11ac。
+- 驱动只认 `itlwm_he` / `itlwm_cc` / `itlwm_tsleep` 三个参数；区域可用 `itlwm_cc=XX` 指定。
+
+### 已知限制（上游）
+
+- 6 GHz 目前**只做被动扫描与上报，实际关联未验证**；
+- 纯 **WPA3-SAE 未实现**（WPA2-Personal / Enterprise 可连）；
+- **Wi-Fi 7（EHT）未测试**；没有隔空投送 / AWDL。
+
+### 同步更新
+
+- `EFI/OC/config.plist`：kext 换新 + `boot-args` 追加 `itlwm_he=1` + kext 注释标注 `_FIX3_20261027`；
+- README（Wi-Fi 章节 / 功能状态 / 启动参数 / 已知限制 / 更新记录）、`docs/EFI-DETAILS.md`（kext 表 + 参数表）、`docs/TROUBLESHOOTING.md`（新增 3.2.1 Wi-Fi 6 与 6 GHz）。

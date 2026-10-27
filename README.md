@@ -58,7 +58,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证 | `AirportItlwm-Sequoia-BE200 2.4.0`，**无需 OCLP 根补丁** |
+| Wi-Fi（BE200） | ✅ 已验证 | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX3_20261027`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启，6 GHz 被动扫描已上报 |
 | 蓝牙 | ✅ 驱动已加载 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + BlueToolFixup 2.7.3 |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -104,7 +104,15 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-已知限制（上游就是这样）：只有 11ac（2.4 / 5 GHz），**没有 6 GHz、没有隔空投送/AWDL**；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
+**本版驱动（2026-10-27 更新）**：`AirportItlwm-Sequoia-BE200.kext` 换成 **2.4.0 `_FIX3_20261027`** 构建，针对 Wi-Fi 6 连接不稳的两处根因：
+
+- 修复**四次握手末包的发送与装钥时序**（之前表现为连上后掉线、认证反复、DHCP 拿不到地址）；
+- 修复**离网时旧状态请求仍在执行**（切网/断网后残留状态导致下一次关联异常）；
+- 保留 **6 GHz 被动扫描与结果上报**（`AirportItlwm-WCLScan6GHzMap` / `WCLChannels6GHz`）。
+
+**开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
+
+已知限制（上游就是这样）：**6 GHz 目前只做到被动扫描与上报，实际 6 GHz 关联未验证**；纯 **WPA3-SAE 未实现**（WPA2-Personal/Enterprise 可连）；**Wi-Fi 7 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
 
 ### 3.2 声卡（ALC287 + 双 AW88399）
 
@@ -203,7 +211,7 @@ BIOS 版本 **78WW** 为本机实测可用版本；换 BIOS 版本请重新核�
 
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
-amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1
+amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
 ```
 
 | 参数 | 作用 |
@@ -213,6 +221,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 | `-vi2c-force-polling` | VoodooI2C 强制轮询，触摸板 / SPKR 枚举更稳 |
 | `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth` | NullMoth NVIDIA 帧缓冲/加速相关；未装驱动时无影响 |
 | `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光，**亮度滑块与亮度键恢复**；只在装了 NullMoth 驱动时生效。若加完卡在 GPU 启动阶段，删掉它 |
+| `itlwm_he=1` | 给 BE200 打开 **HE / 802.11ax（Wi-Fi 6）**，同时是 6 GHz（Wi-Fi 6E）能力集的入口；**Wi-Fi 6 连接稳定性依赖它** |
 | `amfi_get_out_of_my_way=0x1 amfi=0x80` | AMFI 放行，配合 AMFIPass 加载未签名 kext |
 | `ipc_control_port_options=0` | 规避部分 IPC 限制 |
 | `alcid=13` | AppleALC 使用 layout 13 |
@@ -230,6 +239,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 ## 9. 已知限制
 
 - 只针对 **83F5 + ALC287 + 双 AW88399 + BE200**；其他 Legion 型号、其他 codec、其他功放拓扑不要直接套用。
+- **Wi-Fi 的限制**：6 GHz 目前只做到被动扫描与上报，实际 6 GHz 关联未验证；纯 **WPA3-SAE 未实现**（WPA2-Personal / WPA2-Enterprise 可连）；**Wi-Fi 7 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
 - `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；升级 BIOS 后建议重新提取核对。
@@ -274,6 +284,10 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
   - 修正 HDEF `layout-id` 的 8 字节 ASCII 写法错误；
   - 仓库重构为**单一 EFI**，删除旧的三份变体与 OCLP 相关文件，补齐文档与 `tools/check-audio.sh`；
   - 清空 SMBIOS 三码，便于外传。
+- **2026-10-27 晚 — Wi-Fi 驱动升级到 `_FIX3_20261027`**：
+  - 换入新的 `AirportItlwm-Sequoia-BE200.kext`（2.4.0 `_FIX3_20261027`），**修复 Wi-Fi 6 连接不稳**：四次握手末包发送与装钥时序、离网时旧状态请求仍在执行；
+  - boot-args 增加 **`itlwm_he=1`**，打开 HE / 802.11ax（Wi-Fi 6 / 6 GHz 能力集）；
+  - 保留 6 GHz 被动扫描与结果上报（实际 6 GHz 关联尚未验证）。
 
 ---
 

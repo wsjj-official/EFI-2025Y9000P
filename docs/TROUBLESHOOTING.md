@@ -198,6 +198,22 @@ kmutil showloaded | grep -i itlwm
 - 删除旧的网络配置文件，重新加入；
 - 确认路由器 5 GHz/信道兼容；
 - 看 `log show --last 5m | grep -i itlwm`。
+- **连上后掉线 / 反复认证 / DHCP 拿不到地址**：升级到本包的 `AirportItlwm 2.4.0 _FIX3_20261027`（修复四次握手末包发送与装钥时序、离网残留状态），并确认 boot-args 里有 `itlwm_he=1`。
+
+### 3.2.1 Wi-Fi 6（HE）与 6 GHz
+
+- 驱动只认三个参数：`itlwm_he`、`itlwm_cc`、`itlwm_tsleep`。
+- **Wi-Fi 6 / 6 GHz 需要 `itlwm_he=1`**：它打开 802.11ax 能力；6 GHz（Wi-Fi 6E）的 HE 能力集也挂在这条路径上。没有这个参数时只会走 11ac（2.4/5 GHz）。
+- 6 GHz 目前**只做到被动扫描与结果上报**（`AirportItlwm-WCLScan6GHzMap`、`WCLChannels6GHz`），实际 6 GHz 关联上游还没验证；想指定国家/区域可以用 `itlwm_cc=XX`（驱动会按 regulatory 决定 6 GHz 是否可用）。
+- 纯 **WPA3-SAE 未实现**（WPA2-Personal / WPA2-Enterprise 可以连）；**Wi-Fi 7（EHT）未测试**。
+- 验证：
+
+  ```sh
+  spairport info 2>/dev/null | grep -i -E 'PHY|Channel|NSS'
+  system_profiler SPAirPortDataType | grep -i -A3 'Current Network'
+  # 6 GHz 上报的扫描结果（需要路由器开 6 GHz）
+  ioreg -l | grep -i 'WCLScan6GHzMap\|Channels6GHz'
+  ```
 
 ### 3.3 蓝牙
 

@@ -24,7 +24,7 @@ eb3fda04c0e8c8ce0ef4cfc984dcfb771db6aee476d379bd4bc3b7a74a00e4e9  ./EFI/OC/Kexts
 1e927c9bca76d868181c0f81df2bccef3cf19c7d0910219f229360c87babd42c  ./EFI/OC/Kexts/AW88399Driver.kext/Contents/Resources/aw88399_acf.bin
 c6308891becfff8fcbaf5e2116e45d7783100c01761d5bae09c5ff840a3f3c2f  ./EFI/OC/Kexts/AW88399Driver.kext/Contents/_CodeSignature/CodeResources
 6a8ac8d9540e70f4abbf317c1d80bdeb338ea66ca8e2b75b01c64f96f3867487  ./EFI/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/Info.plist
-6fa0b672d77660d9ddcf8fe690310cd1c6a62c1db5b3c8f3a34296b75a6b7b66  ./EFI/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/MacOS/AirportItlwm
+ed3e64d54fb9b7dd3119716f1b6410e0b50199752584b5ebd7db8b60ff6ec687  ./EFI/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/MacOS/AirportItlwm
 4735730c092b2099164c7a053acc9c8b8693c96b70fc650780f73e96b7c54ac3  ./EFI/OC/Kexts/AppleALC.kext/Contents/Info.plist
 2f4460f57eb7c037b532239c5a5ee33bb6c353798d83321faba4421cb52344f6  ./EFI/OC/Kexts/AppleALC.kext/Contents/MacOS/AppleALC
 5b71d13a9e6cc70604ce6635398a6a4d7581aecee53b7613f6d89056d4cd475e  ./EFI/OC/Kexts/AppleIGC.kext/Contents/Info.plist
@@ -198,12 +198,12 @@ ef2b6cd9fc4e11c3ed558555fcfbe9fb3377fd5d87212ceb5e1dc1fa945e0445  ./EFI/OC/Resou
 c64885a9f5b7717321a49927de98f14d19cbb7ae121a1d0f9f62d7d74daf43e0  ./EFI/OC/Resources/Label/Windows.l2x
 a19afffbcff69562165a6ec37125f07b140dc58f0f14d1522c326c5cab3c09b3  ./EFI/OC/Resources/Label/Windows.lbl
 f99c1fa37693521d414c000059d69f991740bce9d33507da8f7b5113689d3f70  ./EFI/OC/Tools/NullMothSafe.efi
-49045e8701bcfc2ee28d11fa16e52029bd5ddfe3f3061160d5ca84a7a9426b79  ./EFI/OC/config.plist
-3fb3ddf72a0104a735da05ea20706026962e153e0fb0290998cb1e23dbdaa3a7  ./README.md
+02254e0695fb4abc0b6ad0500e578c3537af19bfe07ae75f9c0528cbf73e7857  ./EFI/OC/config.plist
+6e222e6fdc012226e7734e6b3ef4b0d7310ac9107ee1c8ee7224e37f1b8a7737  ./README.md
 176c6bb74d8d30630bb543709e9f34b7f73c2ad08e82c3841031f2b0a58fec19  ./THIRD-PARTY.md
 a1947af27d0d8242192542666d331badd0eb3be1528b6e86b9ba5cfecffafe7d  ./docs/AUDIO-AW88399.md
-e38887e3f0fd10720a5a30a212958ed17be3ededdc43dcec90f2cb7741c0b104  ./docs/CHANGELOG.md
-e84014ca74f6696ff61ec939bb21d2fae7eb2067cf9c73d6485ba48f4da2daf3  ./docs/EFI-DETAILS.md
+00ae4058466806875bc1ba4220d7ed210bc86f63ab903b562b4d632984a0b529  ./docs/CHANGELOG.md
+239fe0f9e187ced68118597bb1eb27b760cbb3b99272edcfed09d24db6f94f72  ./docs/EFI-DETAILS.md
 5ddb4e52a85f3516256abd25ffb2bfd096b87122e418d52e077ec291baf79d71  ./docs/INSTALL.md
-f41fdbfda8f16889fcae5949ca309fb4f4881bece68456a2fcf33c46eac0f5fb  ./docs/TROUBLESHOOTING.md
+9eb5efd78857f75a06d40798d595a801d73f65e76c6c22dd4ac8dd597b768f2d  ./docs/TROUBLESHOOTING.md
 25c393421e01578ce71aa99ad46c1c672612302717ade320c6673d35f3278ed8  ./tools/check-audio.sh

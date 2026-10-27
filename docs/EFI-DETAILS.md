@@ -150,7 +150,7 @@ EFI/
 | VoodooInput | `me.kishorprins.VoodooInput` | 1.1.7 | 触摸板输入抽象 |
 | VoodooI2CHID | `com.alexandred.VoodooI2CHID` | 1 | I2C HID 触摸板 |
 | VoodooPS2Controller | `as.acidanthera.voodoo.driver.PS2Controller` | 2.3.8 | PS2 键盘/鼠标 |
-| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0（Sequoia BE200） | BE200 Wi-Fi |
+| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX3_20261027`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1` |
 | IntelBluetoothFirmware | `com.zxystd.IntelBluetoothFirmware` | 2.5.0 | Intel 蓝牙固件 |
 | IntelBTPatcher | `com.zxystd.IntelBTPatcher` | 2.5.0 | 蓝牙补丁 |
 | BlueToolFixup | `as.acidanthera.BlueToolFixup` | 2.7.3 | 蓝牙协议修复 |
@@ -484,7 +484,7 @@ EFI/
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
 ```
 
 | 参数 | 作用 | 能否去掉 |
@@ -497,6 +497,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1
 | `nvfbheads=4` | NVIDIA 显示头数量 | 同上 |
 | `-nvkmsnosmooth` | NullMoth 关闭 KMS 平滑 | 同上 |
 | `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光（亮度滑块 + 亮度键恢复） | 只有装了 NullMoth 驱动才生效；**若加完卡在 GPU 启动阶段**，删掉它 |
+| `itlwm_he=1` | 给 BE200 打开 HE / 802.11ax（Wi-Fi 6），6 GHz 的 HE 能力集也走这条；Wi-Fi 6 稳定性依赖它 | 去掉会退回 11ac（2.4/5 GHz）；**Wi-Fi 6/6E 需要它** |
 | `amfi_get_out_of_my_way=0x1` | AMFI 放行 | 注入未签名 kext 需要 |
 | `amfi=0x80` | AMFI 兼容位 | 同上 |
 | `ipc_control_port_options=0` | IPC 端口选项 | 建议保留 |
