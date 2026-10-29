@@ -15,10 +15,10 @@
 | VoodooI2C（dual-resource 补丁） | 2.9.1 | <https://github.com/VoodooI2C/VoodooI2C> | GPL-3.0 |
 | VoodooI2CHID | 1 | <https://github.com/VoodooI2C/VoodooI2C> | GPL-3.0 |
 | VoodooPS2Controller | 2.3.8 | <https://github.com/acidanthera/VoodooPS2> | GPL-2.0 |
-| AirportItlwm（BE200 Sequoia，**内测分支**） | 2.4.0 `_FIX3_20261027` | <https://github.com/Ersiter/AirportItlwm-BE200>（源自 <https://github.com/OpenIntelWireless/itlwm>） | GPL-2.0 |
+| AirportItlwm（BE200 Sequoia，**内测分支**） | 2.4.0 `_FIX18_20261029` | <https://github.com/Ersiter/AirportItlwm-BE200>（源自 <https://github.com/OpenIntelWireless/itlwm>） | GPL-2.0 |
 | IntelBluetoothFirmware | 2.5.0 | <https://github.com/OpenIntelWireless/IntelBluetoothFirmware> | GPL-2.0 |
 | IntelBTPatcher | 2.5.0 | 同上 | GPL-2.0 |
-| BlueToolFixup | 2.7.3 | <https://github.com/acidanthera/BrcmPatchRAM> | BSD-3-Clause |
+| BlueToolFixup（**FixA2DP 补丁版**） | 2.7.3 | <https://github.com/hexxyan/BlueToolFixup-FixA2DP>（基于 <https://github.com/acidanthera/BrcmPatchRAM>） | BSD-3-Clause |
 | AppleIGC | 1.9d2 | <https://github.com/SongXiaoXi/AppleIGC> | 见上游 |
 | NVMeFix | 1.1.4 | <https://github.com/acidanthera/NVMeFix> | BSD-3-Clause |
 | RestrictEvents | 1.1.7 | <https://github.com/acidanthera/RestrictEvents> | BSD-3-Clause |

@@ -198,14 +198,14 @@ kmutil showloaded | grep -i itlwm
 - 删除旧的网络配置文件，重新加入；
 - 确认路由器 5 GHz/信道兼容；
 - 看 `log show --last 5m | grep -i itlwm`。
-- **连上后掉线 / 反复认证 / DHCP 拿不到地址**：升级到本包的 `AirportItlwm 2.4.0 _FIX3_20261027`（修复四次握手末包发送与装钥时序、离网残留状态），并确认 boot-args 里有 `itlwm_he=1`。
+- **连上后掉线 / 反复认证 / DHCP 拿不到地址**：确认用的是本包的 `AirportItlwm 2.4.0 _FIX18_20261029`（修了四次握手末包发送与装钥时序、离网残留状态、**扫描期间误判整卡故障并重启**、发送队列排空失败触发整卡重启），并确认 boot-args 里有 `itlwm_he=1`。
 
 ### 3.2.1 Wi-Fi 6（HE）与 6 GHz
 
 - 驱动只认三个参数：`itlwm_he`、`itlwm_cc`、`itlwm_tsleep`。
 - **Wi-Fi 6 / 6 GHz 需要 `itlwm_he=1`**：它打开 802.11ax 能力；6 GHz（Wi-Fi 6E）的 HE 能力集也挂在这条路径上。没有这个参数时只会走 11ac（2.4/5 GHz）。
-- 6 GHz 目前**只做到被动扫描与结果上报**（`AirportItlwm-WCLScan6GHzMap`、`WCLChannels6GHz`），实际 6 GHz 关联上游还没验证；想指定国家/区域可以用 `itlwm_cc=XX`（驱动会按 regulatory 决定 6 GHz 是否可用）。
-- 纯 **WPA3-SAE 未实现**（WPA2-Personal / WPA2-Enterprise 可以连）；**Wi-Fi 7（EHT）未测试**。
+- Fix18 已修好 **6 GHz 的扫描/信道映射**（按频段与信道正确映射、自动候选纳入 6 GHz、修正加入 11ax 网络后 6 GHz 信道从可用列表消失）；**实际 6 GHz 关联仍待现场验证**。想指定国家/区域可以用 `itlwm_cc=XX`（驱动按 regulatory 决定 6 GHz 是否可用）。
+- **WPA3-SAE**：Fix18 已实现（重复 Commit/Confirm 处理、失败不在驱动内降级到 PSK、补上 **H2E**），但**仍待现场验证**；WPA2-Personal / WPA2-Enterprise 有连接记录。**Wi-Fi 7（EHT）未测试**。
 - 验证：
 
   ```sh
@@ -218,8 +218,28 @@ kmutil showloaded | grep -i itlwm
 ### 3.3 蓝牙
 
 - 确认 `IntelBluetoothFirmware`、`IntelBTPatcher`、`BlueToolFixup` 顺序；
-- `BlueToolFixup` 需要 `MinKernel 21.0.0`；
+- `BlueToolFixup` 用 FixA2DP 补丁版时 `MinKernel 19.0.0`（本包已改成 19.0.0）；
 - 如果蓝牙开关灰色，先 `Reset NVRAM`。
+
+#### 3.3.1 蓝牙耳机能连上、放歌没声（A2DP）
+
+症状：AirPods 等设备能连、能切降噪、音量正常，但**播放没有声音**；或者**音频会话一断（暂停/切 App）就彻底没声**。
+
+处理：
+
+1. 确认 `EFI/OC/Kexts/BlueToolFixup.kext` 是**FixA2DP 补丁版**（`2.7.3`，来源 <https://github.com/hexxyan/BlueToolFixup-FixA2DP>）；
+2. 确认 boot-args 带 **`-btlfxa2dpcheck`**（没这个参数补丁不启用）：
+
+   ```sh
+   sysctl -n kern.bootargs | grep -- -btlfxa2dpcheck
+   kextstat | grep -i bluetoolfixup
+   ```
+
+3. 重启后连耳机，做几次「暂停 / 继续 / 切走再切回」，每次都应该有声。
+4. `IntelBluetoothFirmware` / `IntelBTPatcher` **保持原版**，不要为了这个补丁一起换版本。
+5. 回退：换回原版 `BlueToolFixup` 2.7.3（acidanthera/BrcmPatchRAM），并从 boot-args 删掉 `-btlfxa2dpcheck`。
+
+> 不要为了切设备反复长按充电盒按钮重置耳机——那会清掉 Mac 和手机上的所有配对。
 
 ---
 

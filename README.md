@@ -58,8 +58,8 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证 | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX3_20261027`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启，6 GHz 被动扫描已上报 |
-| 蓝牙 | ✅ 驱动已加载 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + BlueToolFixup 2.7.3 |
+| Wi-Fi（BE200） | ✅ 已验证 | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX18_20261029`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；6 GHz 扫描/信道映射与 SAE/H2E 已修 |
+| 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
 | 有线网卡（I226-V） | ✅ 已验证 | AppleIGC 1.9d2，`en0` built-in |
@@ -104,17 +104,21 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-10-27 更新）**：`AirportItlwm-Sequoia-BE200.kext` 换成 **2.4.0 `_FIX3_20261027`** 构建，针对 Wi-Fi 6 连接不稳的两处根因：
+**本版驱动（2026-10-29 更新，`_FIX18_20261029`）**：`AirportItlwm-Sequoia-BE200.kext` 换成 **2.4.0 `_FIX18_20261029`** 构建。相对上一版 `_FIX3_20261027` 的变化：
 
-- 修复**四次握手末包的发送与装钥时序**（之前表现为连上后掉线、认证反复、DHCP 拿不到地址）；
-- 修复**离网时旧状态请求仍在执行**（切网/断网后残留状态导致下一次关联异常）；
-- 保留 **6 GHz 被动扫描与结果上报**（`AirportItlwm-WCLScan6GHzMap` / `WCLChannels6GHz`）。
+- **6 GHz**：扫描按频段/信道正确映射，自动候选纳入 6 GHz；修复「加入 11ax 网络后 6 GHz 信道从可用列表消失」；
+- **断连**：发送队列排空失败不再导致整卡重启；固件异常时不再重复触发恢复；
+- **扫描期间误判**：修正扫描过程中把正常状态当成整卡故障并重启（那几秒内网卡对外不可用，所有关联请求都会失败）——这是「Wi-Fi 6 连接不稳」的主要来源之一；
+- **连接状态**：正确上报连接成功 / 失败 / 取消；
+- **监管域**：国家码变更的恢复与重复通知处理；
+- **SAE**：处理重复的 Commit/Confirm 与重试，失败不再在驱动内降级到 PSK；补上 **H2E（Hash to Element）** 协商，AP 要求 H2E 时自动切换并重发 Commit；
+- 保留 6 GHz 被动扫描与结果上报、HE160 与端口检查。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
-**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX3_20261027` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX18_20261029` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
 
-已知限制（上游就是这样）：**6 GHz 目前只做到被动扫描与上报，实际 6 GHz 关联未验证**；纯 **WPA3-SAE 未实现**（WPA2-Personal/Enterprise 可连）；**Wi-Fi 7 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
+已知限制（上游就是这样）：**6 GHz 关联与 WPA3-SAE 仍待现场验证**（SAE/H2E 已实现，WPA2-Personal/Enterprise 有连接记录）；**Wi-Fi 7/EHT 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
 
 ### 3.2 声卡（ALC287 + 双 AW88399）
 
@@ -146,6 +150,32 @@ bash tools/check-audio.sh
 - 旧仓库里的 `Wi-Fi修复-所需文件/`（含 767 MB 的 OCLP-Mod 安装包、`Ventura.zip` 等）已整体删除。
 
 > OCLP 仍然只在一种场景下有用：给**非原生支持的显卡**做系统级补丁（例如本机的 NVIDIA 走的是 NullMoth 那一套，也不是 OCLP）。本 EFI 的 Wi-Fi / 声卡 / 蓝牙均与 OCLP 无关。
+
+### 3.4 蓝牙：A2DP 无声修复（2026-10-29）
+
+**症状**：Intel 蓝牙 + AirPods Pro 2（固件 8B39 及相近版本）能连上、能切降噪、音量也正常，但**放音频没有声音**，或者**音频会话一断就彻底没声**。
+
+**原因**：macOS 蓝牙栈在第三方（Intel）控制器上的 **A2DP 会话恢复缺陷**，不是耳机或手机的问题。
+
+**做法**：换入社区补丁版 `BlueToolFixup.kext`（**2.7.3 FixA2DP**，来自 [hexxyan/BlueToolFixup-FixA2DP](https://github.com/hexxyan/BlueToolFixup-FixA2DP)），并在 boot-args 增加 **`-btlfxa2dpcheck`**（补丁靠这个参数才启用；没有它补丁不生效，也不影响原有蓝牙功能）。
+
+| 项目 | 值 |
+| --- | --- |
+| Bundle ID | `as.acidanthera.BlueToolFixup`（不变） |
+| 版本 | `2.7.3`（FixA2DP 补丁构建） |
+| `Kernel>Add` | 仍是原来那一条（`MinKernel 19.0.0`，`Arch Any`），只换了 kext 本体 |
+| 依赖 | `IntelBluetoothFirmware` / `IntelBTPatcher` **不动** |
+
+验证：
+
+```sh
+sysctl -n kern.bootargs | grep -- -btlfxa2dpcheck      # 必须能看到
+kextstat | grep -i bluetoolfixup                        # 应加载
+```
+
+然后连 AirPods 听歌，特意做几次「暂停 / 继续 / 切走再切回」，确认每次都有声。
+
+> 注意：**不要**为了切设备反复长按 AirPods 盒背重置（会清掉所有配对）。回退：换回原版 `BlueToolFixup` 2.7.3（acidanthera/BrcmPatchRAM）并从 boot-args 删掉 `-btlfxa2dpcheck`。
 
 ---
 
@@ -213,7 +243,7 @@ BIOS 版本 **78WW** 为本机实测可用版本；换 BIOS 版本请重新核�
 
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
-amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
+amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
 | 参数 | 作用 |
@@ -228,6 +258,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 | `ipc_control_port_options=0` | 规避部分 IPC 限制 |
 | `alcid=13` | AppleALC 使用 layout 13 |
 | `alcverbs=1` | 启用 AppleALC 共享 DAC 的 verb hook（**声卡修复必需，别删**，否则 pin14 的音量/静音镜像不工作） |
+| `-btlfxa2dpcheck` | 启用 **BlueToolFixup FixA2DP** 的 A2DP 会话恢复补丁（蓝牙耳机放歌没声/断一下就没声）；删掉则退回原版行为 |
 
 ---
 
@@ -241,7 +272,8 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 ## 9. 已知限制
 
 - 只针对 **83F5 + ALC287 + 双 AW88399 + BE200**；其他 Legion 型号、其他 codec、其他功放拓扑不要直接套用。
-- **Wi-Fi 的限制**：6 GHz 目前只做到被动扫描与上报，实际 6 GHz 关联未验证；纯 **WPA3-SAE 未实现**（WPA2-Personal / WPA2-Enterprise 可连）；**Wi-Fi 7 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
+- **Wi-Fi 的限制**：6 GHz 关联与 **WPA3-SAE 仍待现场验证**（Fix18 已实现 SAE + H2E，WPA2-Personal / Enterprise 有连接记录）；**Wi-Fi 7/EHT 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
+- **蓝牙 A2DP**：补丁版 `BlueToolFixup` 依赖 `-btlfxa2dpcheck` 才生效；`IntelBluetoothFirmware` / `IntelBTPatcher` 保持原版，不要一起换版本。
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
 - `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；升级 BIOS 后建议重新提取核对。
@@ -290,6 +322,10 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
   - 换入新的 `AirportItlwm-Sequoia-BE200.kext`（2.4.0 `_FIX3_20261027`），**修复 Wi-Fi 6 连接不稳**：四次握手末包发送与装钥时序、离网时旧状态请求仍在执行；
   - boot-args 增加 **`itlwm_he=1`**，打开 HE / 802.11ax（Wi-Fi 6 / 6 GHz 能力集）；
   - 保留 6 GHz 被动扫描与结果上报（实际 6 GHz 关联尚未验证）。
+- **2026-10-29 — Wi-Fi `_FIX18_20261029` + 蓝牙 A2DP 修复**：
+  - Wi-Fi 换入 **2.4.0 `_FIX18_20261029`**：6 GHz 扫描/信道映射与自动候选、断连时不再整卡重启、扫描期误判修复、连接状态上报、监管域处理、**SAE 重复帧 + H2E**；
+  - 蓝牙换入 **`BlueToolFixup 2.7.3 FixA2DP`**（hexxyan 补丁版），boot-args 增加 **`-btlfxa2dpcheck`**，修 AirPods 等设备「能连上、放歌没声 / 断一下就没声」；
+  - `Kernel>Add` 里 BlueToolFixup 的 `MinKernel` 调整为 `19.0.0`（与补丁包建议一致），条目本身不变。
 
 ---
 

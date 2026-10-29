@@ -703,7 +703,7 @@
 				<key>BundlePath</key>
 				<string>BlueToolFixup.kext</string>
 				<key>Comment</key>
-				<string>V2.7.3</string>
+				<string>BlueToolFixup 2.7.3 FixA2DP (A2DP resume fix; needs -btlfxa2dpcheck)</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -711,7 +711,7 @@
 				<key>MaxKernel</key>
 				<string></string>
 				<key>MinKernel</key>
-				<string>21.0.0</string>
+				<string>19.0.0</string>
 				<key>PlistPath</key>
 				<string>Contents/Info.plist</string>
 			</dict>
@@ -973,7 +973,7 @@
 				<key>BundlePath</key>
 				<string>AirportItlwm-Sequoia-BE200.kext</string>
 				<key>Comment</key>
-				<string>macOS 15.2+ BE200 Sequoia build _FIX3_20261027 (HE/6GHz, 4-way handshake + key-install timing fix); added 8086:272B match</string>
+				<string>macOS 15.2+ BE200 Sequoia build _FIX18_20261029 (6GHz scan/channel mapping, SAE H2E, TX-queue/scan recovery fixes); added 8086:272B match</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -1534,7 +1534,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1</string>
+				<string>-v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck</string>
 				<key>csr-active-config</key>
 				<data>
 				QwoAAA==

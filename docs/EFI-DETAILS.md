@@ -150,10 +150,10 @@ EFI/
 | VoodooInput | `me.kishorprins.VoodooInput` | 1.1.7 | 触摸板输入抽象 |
 | VoodooI2CHID | `com.alexandred.VoodooI2CHID` | 1 | I2C HID 触摸板 |
 | VoodooPS2Controller | `as.acidanthera.voodoo.driver.PS2Controller` | 2.3.8 | PS2 键盘/鼠标 |
-| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX3_20261027`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1` |
+| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX18_20261029`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1` |
 | IntelBluetoothFirmware | `com.zxystd.IntelBluetoothFirmware` | 2.5.0 | Intel 蓝牙固件 |
 | IntelBTPatcher | `com.zxystd.IntelBTPatcher` | 2.5.0 | 蓝牙补丁 |
-| BlueToolFixup | `as.acidanthera.BlueToolFixup` | 2.7.3 | 蓝牙协议修复 |
+| BlueToolFixup（FixA2DP） | `as.acidanthera.BlueToolFixup` | 2.7.3 | 蓝牙 A2DP 会话恢复修复；需 `-btlfxa2dpcheck` |
 | WhateverGreen | `as.vit9696.WhateverGreen` | 1.7.2 | 显卡补丁/背光 |
 | AppleIGC | `com.sxx.AppleIGC` | 1.9d2 | Intel 有线网卡 |
 | AppleMCEReporterDisabler | `org.xlnc.disabler.MCEReporter` | 1.2 | 禁用 MCE reporter |
@@ -218,7 +218,7 @@ EFI/
 - 只保留一个 `VoodooInput`：`VoodooPS2Controller` 内的那份禁用，使用 `VoodooI2C` 插件里的 1.1.7。
 - `MinKernel` / `MaxKernel` 只对以下项设了限制：
   - `AMFIPass`：`MinKernel 20.0.0`
-  - `BlueToolFixup`：`MinKernel 21.0.0`
+  - `BlueToolFixup`：`MinKernel 19.0.0`（FixA2DP 补丁版）
   - `NVMeFix`：`MinKernel 18.0.0`
   - `AirportItlwm`：`MinKernel 24.2.0`，`MaxKernel 24.99.99`，`Arch x86_64`
   - `HoRNDIS`：`MinKernel 20.0.0`
@@ -484,7 +484,7 @@ EFI/
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
 | 参数 | 作用 | 能否去掉 |
@@ -498,6 +498,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
 | `-nvkmsnosmooth` | NullMoth 关闭 KMS 平滑 | 同上 |
 | `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光（亮度滑块 + 亮度键恢复） | 只有装了 NullMoth 驱动才生效；**若加完卡在 GPU 启动阶段**，删掉它 |
 | `itlwm_he=1` | 给 BE200 打开 HE / 802.11ax（Wi-Fi 6），6 GHz 的 HE 能力集也走这条；Wi-Fi 6 稳定性依赖它 | 去掉会退回 11ac（2.4/5 GHz）；**Wi-Fi 6/6E 需要它** |
+| `-btlfxa2dpcheck` | 启用 BlueToolFixup FixA2DP 的 A2DP 会话恢复补丁（蓝牙耳机放歌没声/断一下没声） | 想去掉补丁行为时删掉；不影响其它蓝牙功能 |
 | `amfi_get_out_of_my_way=0x1` | AMFI 放行 | 注入未签名 kext 需要 |
 | `amfi=0x80` | AMFI 兼容位 | 同上 |
 | `ipc_control_port_options=0` | IPC 端口选项 | 建议保留 |

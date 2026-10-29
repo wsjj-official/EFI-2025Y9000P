@@ -122,3 +122,33 @@
 
 - `EFI/OC/config.plist`：kext 换新 + `boot-args` 追加 `itlwm_he=1` + kext 注释标注 `_FIX3_20261027`；
 - README（Wi-Fi 章节 / 功能状态 / 启动参数 / 已知限制 / 更新记录）、`docs/EFI-DETAILS.md`（kext 表 + 参数表）、`docs/TROUBLESHOOTING.md`（新增 3.2.1 Wi-Fi 6 与 6 GHz）。
+
+---
+
+## 2026-10-29 — Wi-Fi `_FIX18_20261029` + 蓝牙 A2DP 修复
+
+### Wi-Fi（BE200）
+
+- 换入 **`AirportItlwm-Sequoia-BE200.kext` 2.4.0 `_FIX18_20261029`**（内测分支 <https://github.com/Ersiter/AirportItlwm-BE200>）。
+- 相对 Fix3 / 社区 Fix11 的变化：
+  - **6 GHz**：扫描按频段与信道正确映射，自动候选纳入 6 GHz；修正「加入 11ax 网络后 6 GHz 信道从可用列表消失」；
+  - **断连**：发送队列排空失败不再引发整卡重启；固件异常时不再重复触发恢复；
+  - **扫描期误判**：修正扫描过程中把正常状态误判为整卡故障并重启（那几秒网卡对外不可用，关联请求全部失败）——这是 Wi-Fi 6 不稳的主要来源；
+  - **连接状态**：正确上报成功 / 失败 / 取消；
+  - **监管域**：国家码变更的恢复与重复通知处理；
+  - **SAE**：重复 Commit/Confirm 与重试处理，失败不在驱动内降级到 PSK；补上 **H2E（Hash to Element）**，AP 要求 H2E 时自动切换并重发 Commit。
+- boot-args 保持 `itlwm_he=1`（HE / 802.11ax 与 6 GHz 能力入口）。
+- 仍待现场验证：实际 6 GHz 关联、WPA3-SAE 连接；Wi-Fi 7/EHT 未测试。
+
+### 蓝牙（A2DP）
+
+- 换入 **`BlueToolFixup.kext` 2.7.3 FixA2DP**（<https://github.com/hexxyan/BlueToolFixup-FixA2DP>，基于 acidanthera/BrcmPatchRAM）。
+- 修「Intel 蓝牙 + AirPods Pro 2（8B39 等）：能连上、能切降噪、音量正常，但放音频没声音；音频会话一断就彻底没声」——macOS 蓝牙栈在第三方控制器上的 A2DP 会话恢复缺陷。
+- boot-args 增加 **`-btlfxa2dpcheck`**（补丁靠该参数启用；没有它补丁不生效，也不影响其它蓝牙功能）。
+- `Kernel>Add` 里 `BlueToolFixup` 的 `MinKernel` 由 21.0.0 调整为 **19.0.0**（与补丁包建议一致），`IntelBluetoothFirmware` / `IntelBTPatcher` 不动。
+
+### 同步更新
+
+- `EFI/OC/config.plist`：两个 kext 换新 + boot-args 增加 `-btlfxa2dpcheck` + 条目注释更新；
+- README（功能状态 / Wi-Fi 章节 / 新增 3.4 蓝牙 A2DP / 启动参数 / 已知限制 / 更新记录）；
+- `docs/EFI-DETAILS.md`（kext 表、Kernel/Add 说明、参数表）、`docs/TROUBLESHOOTING.md`（3.2 与 3.2.1 更新、新增 3.3.1 A2DP）、`THIRD-PARTY.md`。
