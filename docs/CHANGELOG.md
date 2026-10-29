@@ -138,7 +138,8 @@
   - **监管域**：国家码变更的恢复与重复通知处理；
   - **SAE**：重复 Commit/Confirm 与重试处理，失败不在驱动内降级到 PSK；补上 **H2E（Hash to Element）**，AP 要求 H2E 时自动切换并重发 Commit。
 - boot-args 保持 `itlwm_he=1`（HE / 802.11ax 与 6 GHz 能力入口）。
-- 仍待现场验证：实际 6 GHz 关联、WPA3-SAE 连接；Wi-Fi 7/EHT 未测试。
+- **WPA3（SAE）实测仍不可用**（驱动侧虽已实现 SAE/H2E）：连接热点请用 **WPA2-Personal（AES）**；WPA3/WPA2 混合模式也可能协商到 WPA3 而失败，建议把热点加密固定为 WPA2 或单独开一个 WPA2 SSID。
+- 6 GHz 实际关联仍待现场验证；Wi-Fi 7/EHT 未测试。
 
 ### 蓝牙（A2DP）
 
@@ -152,3 +153,11 @@
 - `EFI/OC/config.plist`：两个 kext 换新 + boot-args 增加 `-btlfxa2dpcheck` + 条目注释更新；
 - README（功能状态 / Wi-Fi 章节 / 新增 3.4 蓝牙 A2DP / 启动参数 / 已知限制 / 更新记录）；
 - `docs/EFI-DETAILS.md`（kext 表、Kernel/Add 说明、参数表）、`docs/TROUBLESHOOTING.md`（3.2 与 3.2.1 更新、新增 3.3.1 A2DP）、`THIRD-PARTY.md`。
+
+---
+
+## 2026-10-29 — 文档补记：WPA3 不可用，推荐 WPA2
+
+- 按实测结论更正文档：**WPA3（WPA3-Personal / SAE）目前仍不可用**，连接 Wi-Fi 热点请使用 **WPA2-Personal（AES）**（WPA2-Enterprise/PEAP 也可）。
+- WPA3/WPA2 混合模式可能协商到 WPA3 而失败；建议把热点加密固定为 WPA2，或单独开一个 WPA2 的 SSID。
+- 同步更新：README（Wi-Fi 状态行、§3.1「连接建议」、§9 已知限制、§12 更新记录）、`docs/TROUBLESHOOTING.md`（3.2 与 3.2.1）、`docs/EFI-DETAILS.md`。

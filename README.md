@@ -58,7 +58,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证 | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX18_20261029`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；6 GHz 扫描/信道映射与 SAE/H2E 已修 |
+| Wi-Fi（BE200） | ✅ 已验证（**请用 WPA2 连接**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX18_20261029`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；6 GHz 扫描/信道映射已修；**WPA3 目前不可用，热点请用 WPA2-Personal（AES）** |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -111,14 +111,19 @@ wdutil info                                 # SSID / BSSID / RSSI / 信道
 - **扫描期间误判**：修正扫描过程中把正常状态当成整卡故障并重启（那几秒内网卡对外不可用，所有关联请求都会失败）——这是「Wi-Fi 6 连接不稳」的主要来源之一；
 - **连接状态**：正确上报连接成功 / 失败 / 取消；
 - **监管域**：国家码变更的恢复与重复通知处理；
-- **SAE**：处理重复的 Commit/Confirm 与重试，失败不再在驱动内降级到 PSK；补上 **H2E（Hash to Element）** 协商，AP 要求 H2E 时自动切换并重发 Commit；
+- **SAE**：驱动侧处理了重复的 Commit/Confirm 与重试，失败不再在驱动内降级到 PSK；补上 **H2E（Hash to Element）** 协商。**但实测 WPA3 仍然连不上**，目前请用 WPA2（见下面「连接建议」）；
 - 保留 6 GHz 被动扫描与结果上报、HE160 与端口检查。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
 **驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX18_20261029` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
 
-已知限制（上游就是这样）：**6 GHz 关联与 WPA3-SAE 仍待现场验证**（SAE/H2E 已实现，WPA2-Personal/Enterprise 有连接记录）；**Wi-Fi 7/EHT 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
+> **连接建议：请用 WPA2-Personal（AES）连接 Wi-Fi 热点。**
+> **WPA3 目前仍不可用**——驱动侧虽然已经实现 SAE 与 H2E，但实测连不上；WPA3/WPA2 混合模式也可能协商到 WPA3 而失败。
+> 建议把热点的加密方式固定为 **WPA2-Personal（AES）**，或单独开一个 WPA2 的 SSID 给这台机器用。
+> WPA2-Enterprise（PEAP）已有连接记录；WPA2-Personal 为推荐配置。
+
+其余限制：**6 GHz 关联仍待现场验证**；**Wi-Fi 7/EHT 未测试**；没有隔空投送/AWDL；扫描偶尔不稳，扫不到列表时用「加入其他网络…」手填 SSID + 密码。
 
 ### 3.2 声卡（ALC287 + 双 AW88399）
 
@@ -272,7 +277,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 ## 9. 已知限制
 
 - 只针对 **83F5 + ALC287 + 双 AW88399 + BE200**；其他 Legion 型号、其他 codec、其他功放拓扑不要直接套用。
-- **Wi-Fi 的限制**：6 GHz 关联与 **WPA3-SAE 仍待现场验证**（Fix18 已实现 SAE + H2E，WPA2-Personal / Enterprise 有连接记录）；**Wi-Fi 7/EHT 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
+- **Wi-Fi 的限制**：**连接热点请用 WPA2-Personal（AES）；WPA3 目前不可用**（SAE/H2E 驱动侧已实现，实测连不上，混合模式也可能协商到 WPA3 而失败）。6 GHz 关联仍待现场验证；**Wi-Fi 7/EHT 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
 - **蓝牙 A2DP**：补丁版 `BlueToolFixup` 依赖 `-btlfxa2dpcheck` 才生效；`IntelBluetoothFirmware` / `IntelBTPatcher` 保持原版，不要一起换版本。
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
@@ -323,7 +328,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
   - boot-args 增加 **`itlwm_he=1`**，打开 HE / 802.11ax（Wi-Fi 6 / 6 GHz 能力集）；
   - 保留 6 GHz 被动扫描与结果上报（实际 6 GHz 关联尚未验证）。
 - **2026-10-29 — Wi-Fi `_FIX18_20261029` + 蓝牙 A2DP 修复**：
-  - Wi-Fi 换入 **2.4.0 `_FIX18_20261029`**：6 GHz 扫描/信道映射与自动候选、断连时不再整卡重启、扫描期误判修复、连接状态上报、监管域处理、**SAE 重复帧 + H2E**；
+  - Wi-Fi 换入 **2.4.0 `_FIX18_20261029`**：6 GHz 扫描/信道映射与自动候选、断连时不再整卡重启、扫描期误判修复、连接状态上报、监管域处理、SAE 重复帧 + H2E（**WPA3 实测仍不可用，请改用 WPA2**）；
   - 蓝牙换入 **`BlueToolFixup 2.7.3 FixA2DP`**（hexxyan 补丁版），boot-args 增加 **`-btlfxa2dpcheck`**，修 AirPods 等设备「能连上、放歌没声 / 断一下就没声」；
   - `Kernel>Add` 里 BlueToolFixup 的 `MinKernel` 调整为 `19.0.0`（与补丁包建议一致），条目本身不变。
 
