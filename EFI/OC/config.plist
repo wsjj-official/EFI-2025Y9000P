@@ -973,7 +973,7 @@
 				<key>BundlePath</key>
 				<string>AirportItlwm-Sequoia-BE200.kext</string>
 				<key>Comment</key>
-				<string>macOS 15.2+ BE200 Sequoia build _FIX18_20261029 (6GHz scan/channel mapping, SAE H2E, TX-queue/scan recovery fixes); added 8086:272B match</string>
+				<string>macOS 15.2+ BE200 Sequoia build _FIX22_20261030 (WPA3-SAE H2E works, RSNXE/handshake fix, MLO/6GHz, EHT bitmap); added 8086:272B match</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>

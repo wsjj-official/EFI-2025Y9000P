@@ -158,6 +158,34 @@
 
 ## 2026-10-29 — 文档补记：WPA3 不可用，推荐 WPA2
 
+> 已被 2026-10-30 的 `_FIX22_20261030` 取代：**WPA3-Personal 现已实测可用**（见下一条）。
+
 - 按实测结论更正文档：**WPA3（WPA3-Personal / SAE）目前仍不可用**，连接 Wi-Fi 热点请使用 **WPA2-Personal（AES）**（WPA2-Enterprise/PEAP 也可）。
 - WPA3/WPA2 混合模式可能协商到 WPA3 而失败；建议把热点加密固定为 WPA2，或单独开一个 WPA2 的 SSID。
 - 同步更新：README（Wi-Fi 状态行、§3.1「连接建议」、§9 已知限制、§12 更新记录）、`docs/TROUBLESHOOTING.md`（3.2 与 3.2.1）、`docs/EFI-DETAILS.md`。
+
+---
+
+## 2026-10-30 — Wi-Fi `_FIX22_20261030`：WPA3-Personal（SAE）实测可用
+
+### 驱动
+
+- 换入 **`AirportItlwm-Sequoia-BE200.kext` 2.4.0 `_FIX22_20261030`**（内测分支 <https://github.com/Ersiter/AirportItlwm-BE200>）。
+- **WPA3-Personal（SAE）默认走 H2E-only**，本机实测可连上；修正 AP RSNXE 的保存与四次握手校验（不再要求 AP 能力字节等于本机写死值）；CI 增加 SAE 主机测试。传统 **HnP** 隔离为默认不编译的实验兼容路径。
+- **MLO / 6 GHz**：修正 MLO 关联请求长度、附属链路响应偏移与共享 AID；修正 PHY 频段比较漏掉 6 GHz。
+- **EHT**：按协议检查 80/160/320 MHz 打孔位图，降宽后重新校验，避免向固件提交非法组合。
+- 6 GHz 信道按固件与实际监管域许可，不建议伪造地区。
+
+### 连接建议
+
+- **WPA3-Personal（SAE）可用**，前提是 AP 支持 H2E；只支持 HnP 的老 WPA3 路由器连不上。
+- **WPA2-Personal（AES）与 WPA2-Enterprise（PEAP）仍然完全可用**，可作为对照或保守选择。
+
+### 仍待验证
+
+- 6 GHz 实际关联、Wi-Fi 7 / EHT / MLO 未实测。
+
+### 同步更新
+
+- `EFI/OC/config.plist`：Wi-Fi kext 换新，条目注释标注 `_FIX22_20261030`。
+- README（Wi-Fi 状态行、§3.1 驱动变化与「连接建议」、§9 已知限制、§12 更新记录）；`docs/TROUBLESHOOTING.md`（3.2 / 3.2.1 改为 WPA3 可用 + H2E 前提与对照方法）；`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`。

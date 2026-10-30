@@ -198,7 +198,7 @@ kmutil showloaded | grep -i itlwm
 - 删除旧的网络配置文件，重新加入；
 - 确认路由器 5 GHz/信道兼容；
 - 看 `log show --last 5m | grep -i itlwm`。
-- **连不上 / 认证失败**：先确认热点不是 WPA3（**改用 WPA2-Personal/AES**，见 3.2.1）。
+- **连不上 / 认证失败**：先确认加密方式与驱动版本（WPA3 需要本包 `_FIX22_20261030` 及以上，且 AP 支持 H2E，见 3.2.1）；仍不行就退回 WPA2-Personal/AES 对比。
 - **连上后掉线 / 反复认证 / DHCP 拿不到地址**：确认用的是本包的 `AirportItlwm 2.4.0 _FIX18_20261029`（修了四次握手末包发送与装钥时序、离网残留状态、**扫描期间误判整卡故障并重启**、发送队列排空失败触发整卡重启），并确认 boot-args 里有 `itlwm_he=1`。
 
 ### 3.2.1 Wi-Fi 6（HE）与 6 GHz
@@ -206,9 +206,12 @@ kmutil showloaded | grep -i itlwm
 - 驱动只认三个参数：`itlwm_he`、`itlwm_cc`、`itlwm_tsleep`。
 - **Wi-Fi 6 / 6 GHz 需要 `itlwm_he=1`**：它打开 802.11ax 能力；6 GHz（Wi-Fi 6E）的 HE 能力集也挂在这条路径上。没有这个参数时只会走 11ac（2.4/5 GHz）。
 - Fix18 已修好 **6 GHz 的扫描/信道映射**（按频段与信道正确映射、自动候选纳入 6 GHz、修正加入 11ax 网络后 6 GHz 信道从可用列表消失）；**实际 6 GHz 关联仍待现场验证**。想指定国家/区域可以用 `itlwm_cc=XX`（驱动按 regulatory 决定 6 GHz 是否可用）。
-- **加密方式：请用 WPA2-Personal（AES）**。**WPA3（WPA3-Personal / SAE）目前仍不可用**——Fix18 虽然实现了 SAE 与 H2E（重复 Commit/Confirm、失败不降级到 PSK、H2E 自动切换），但实测连不上；WPA3/WPA2 混合模式也可能协商到 WPA3 而失败。
-  - 处置：把路由器该 SSID 的加密固定为 **WPA2-Personal（AES）**，或单独开一个 WPA2 的 SSID 给这台机器；不要指望在系统里「降级」到 WPA2。
-  - WPA2-Enterprise（PEAP）已有连接记录；WPA2-Personal 为推荐配置。
+- **加密方式（2026-10-30 更新）：WPA3-Personal（SAE）已实测可用**，要求：
+  - 驱动为 `_FIX22_20261030` 或更新；**WPA3 默认走 H2E-only，AP 必须支持 H2E**（只支持传统 HnP 的老路由器连不上，HnP 是默认不编译的实验路径）；
+  - 典型现象：认证阶段失败 / 一直在“正在连接”。先确认路由器 WPA3 模式是 H2E（有的固件写作 WPA3-Only/H2E，或提供 WPA3/WPA2 混合）；
+  - 拿不准时用 **WPA2-Personal（AES）** 做对照：WPA2 能连、WPA3 不能连 → 多半是 AP 不支持 H2E；两者都连不上 → 按 3.1/3.2 查驱动与扫描。
+  - **WPA2-Personal（AES）与 WPA2-Enterprise（PEAP）仍然完全可用**。
+- 别为了多出 6 GHz 信道去伪造监管域（`itlwm_cc`），信道会按固件与真实监管域裁剪。
 - **Wi-Fi 7（EHT）未测试**。
 - 验证：
 

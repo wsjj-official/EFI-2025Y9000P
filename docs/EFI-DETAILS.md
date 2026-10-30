@@ -150,7 +150,7 @@ EFI/
 | VoodooInput | `me.kishorprins.VoodooInput` | 1.1.7 | 触摸板输入抽象 |
 | VoodooI2CHID | `com.alexandred.VoodooI2CHID` | 1 | I2C HID 触摸板 |
 | VoodooPS2Controller | `as.acidanthera.voodoo.driver.PS2Controller` | 2.3.8 | PS2 键盘/鼠标 |
-| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX18_20261029`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**连热点用 WPA2，WPA3 不可用** |
+| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX22_20261030`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**WPA3-Personal（SAE/H2E）可用**，WPA2 也可用 |
 | IntelBluetoothFirmware | `com.zxystd.IntelBluetoothFirmware` | 2.5.0 | Intel 蓝牙固件 |
 | IntelBTPatcher | `com.zxystd.IntelBTPatcher` | 2.5.0 | 蓝牙补丁 |
 | BlueToolFixup（FixA2DP） | `as.acidanthera.BlueToolFixup` | 2.7.3 | 蓝牙 A2DP 会话恢复修复；需 `-btlfxa2dpcheck` |
