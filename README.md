@@ -1,22 +1,34 @@
-# Lenovo Legion Y9000P IAX10H（83F5）— OpenCore EFI
+# Lenovo Legion Y9000P IAX10H（83F5）— OpenCore EFI（macOS 15 + macOS 26）
 
-面向 **Lenovo Legion Y9000P IAX10H / 板号 83F5 / Intel Core Ultra 9 275HX / RTX 5070 Ti Laptop** 的 macOS OpenCore EFI。
+面向 **Lenovo Legion Y9000P IAX10H / 板号 83F5 / Intel Core Ultra 9 275HX / RTX 5070 Ti Laptop** 的 OpenCore EFI。
 
-**v1.0（2026-10-27）这一版做成了三件事：**
+**仓库现在是两份 EFI，按系统版本选一份用：**
 
-1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），用 `AirportItlwm-Sequoia-BE200 2.4.0` 直接注入；
+| 目录 | 目标系统 | 状态 |
+| --- | --- | --- |
+| [`EFI-Sequoia/`](EFI-Sequoia) | **macOS 15 Sequoia**（15.2+） | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
+| [`EFI-Tahoe/`](EFI-Tahoe) | **macOS 26 Tahoe**（26.4+） | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
+
+> 两份都是「`BOOT/` + `OC/` 直接展开」的形态，把选中那份的**内容**拷到 ESP 根目录即可（保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
+> **不要两份混拷**：Wi-Fi / 蓝牙 kext 是分系统版本的（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）。
+
+**这一版做成了这几件事：**
+
+1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX24_20261030`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
 2. **外放修好** —— Realtek ALC287 + 两颗 Awinic AW88399 智能功放（高音 + 低音同时工作，音量/静音正常）；
-3. **彻底移除对 OCLP 的依赖** —— 不再需要 OCLP / OCLP-Mod，不再需要 `Post-Install Root Patch`，也不再需要 `IOSkywalkFamily` + `IO80211FamilyLegacy` 那一套回移植补丁。
+3. **蓝牙 A2DP 修复** —— AirPods 等设备「能连上、放歌没声 / 断一下就没声」已修（`BlueToolFixup` FixA2DP + `-btlfxa2dpcheck`）；
+4. **内屏亮度** —— `nvrmacpibl=1`，由 NullMoth NVKMS 注册背光（需装 NVIDIA 驱动）；
+5. **macOS 26 EFI** —— 新增，实测可进系统；**未装 NVIDIA 驱动时仅 1–3 FPS**，详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md)。
 
 > 发布包已经清空原机 SMBIOS：`SystemSerialNumber` / `MLB` / `SystemUUID` 为空、`ROM` 为 6 字节零。
 > **使用前必须用 [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS) 生成自己的三码**，否则 iCloud、iMessage、App Store 会不可用（不影响开机与声卡）。
 
 ---
 
-## 0. 和旧版（仓库此前三份 EFI）的区别
+## 0. 和旧版（仓库最早那三份 EFI 变体）的区别
 
-仓库此前是三个变体目录：`带NVIDIA驱动修改项EFI`、`不带NVDIA驱动修改项EFI`、`EFI-1401移除OCLP支持带NV驱动修改项`。
-v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
+仓库最早是三个变体目录：`带NVIDIA驱动修改项EFI`、`不带NVDIA驱动修改项EFI`、`EFI-1401移除OCLP支持带NV驱动修改项`，
+后来合并成一份 EFI；**2026-10-31 起又拆成「15 / 26 各一份」**（驱动 ABI 不同，不能共用）。
 
 | 项目 | 旧版（2026-10-14 / 10-16） | 本版 v1.0（2026-10-27） |
 | --- | --- | --- |
@@ -24,7 +36,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | 声卡外放 | `AppleALC` layout 13，能出声但**音量很小**（缺功放驱动） | 增加 `AW88399Driver.kext 0.2`（两颗功放 `0x34`/`0x35` + ACF 固件）+ `AppleALC 1.9.8` 共享 DAC 分支 + `VoodooI2C` dual-resource 补丁，**高音/低音都正常** |
 | SIP | `0xFF0F0000` | `0x0A43`（只为放行第三方 kext，保持最小放宽） |
 | `Kernel>Block` | 还要屏蔽 `IOSkywalkFamily` | 只剩 `AppleEthernetRL` 一条（让 AppleIGC 接管 I225/I226） |
-| 仓库结构 | 三份变体 + `Wi-Fi修复-所需文件/`（含 767 MB 的 OCLP-Mod 安装包） | 单一 EFI + 文档 + 检查脚本，OCLP 相关文件全部移除 |
+| 仓库结构 | 三份变体 + `Wi-Fi修复-所需文件/`（含 767 MB 的 OCLP-Mod 安装包） | `EFI-Sequoia/` + `EFI-Tahoe/` 两份 EFI + 文档 + 检查脚本，OCLP 相关文件全部移除 |
 | SMBIOS | 含原机三码 | 清空占位，需自行生成 |
 
 ---
@@ -58,7 +70,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX22_20261030`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用 |
+| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX24_20261030`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持** |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -72,6 +84,7 @@ v1.0 起合并为**单一 EFI**，`EFI/` 直接放到 ESP 根目录即可。
 | 睡眠 / 唤醒 | ⚠️ 未验证 | 未做长时间睡眠测试 |
 | 内屏亮度调节 | ✅ 已恢复（需 NVIDIA 驱动） | 固件 DSDT 里只有空的 `_BCM` 桩，常规 SSDT-PNLF 不适用；加 **`nvrmacpibl=1`** 后由 NullMoth 的 NVKMS 自己注册内屏背光，滑块与亮度键都可用。**必须装了 NullMoth 驱动才生效**，没装驱动时滑块仍然是灰的 |
 | NVIDIA 独显 | ⚠️ 不在本 EFI | 需单独安装 NullMoth 2.6.2，见第 10 节 |
+| **macOS 26 Tahoe（`EFI-Tahoe/`）** | ✅ 可进桌面（需 NVIDIA 驱动才有正常帧率） | 实测能进系统；**未装 NullMoth 驱动时约 1–3 FPS**，装驱动后正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) |
 | iServices | ⚠️ 需自行生成三码 | 发布包已清空 SMBIOS |
 
 ---
@@ -104,19 +117,23 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-10-30 更新，`_FIX22_20261030`）**：`AirportItlwm-Sequoia-BE200.kext` 换成 **2.4.0 `_FIX22_20261030`** 构建。这一版的重点是 **WPA3-Personal（SAE）终于可用**：
+**本版驱动（2026-10-30 更新，`_FIX24_20261030`）**：`AirportItlwm-Sequoia-BE200.kext` 换成 **2.4.0 `_FIX24_20261030`** 构建。
 
-- **WPA3-Personal（SAE）**：默认走 **H2E-only**（Hash to Element），本机实测可以连上；修正 **AP RSNXE 的保存与四次握手校验**（不再要求 AP 能力字节与本机写死的值完全相等）；补上 SAE 主机测试。传统 **HnP** 隔离为默认不编译的实验兼容路径；
-- **MLO / 6 GHz**：修正 MLO 关联请求长度、附属链路响应偏移与共享 AID；修正 PHY 频段比较漏掉 6 GHz 的问题；
-- **EHT**：按协议检查 80/160/320 MHz 打孔位图，降宽后重新校验，避免把非法组合提交给固件；
-- 6 GHz 信道严格按固件与**实际监管域**许可（不要为了多出信道去伪造地区）；
-- 继承上一版（`_FIX18_20261029`）的修复：扫描期误判整卡故障、发送队列排空失败触发整卡重启、连接状态上报、监管域变更处理、6 GHz 扫描/信道映射。
+- **国家码 / 监管域**：按「启动参数 → 固件 → 定位」的优先级上报；监管请求是否获准、实际可用信道表分别取自固件响应，不再互相污染；修正「监管请求被拒后仍锁死后续更新」以及复位后硬件接管、定时器与停机的生命周期问题；
+- **6 GHz**：补齐 **RNR 邻居报告 → 6 GHz 定向探测**链路（通过真实探测响应拿到 SSID），刷新更名缓存并保留隐藏 SSID 行为；
+- **多链路**：监管表变更后统一校验主/次链路的信道、HE/EHT 与带宽限制，清理失效连接与迟到的多链路任务；
+- **RX 中断**：修正关闭 Wi-Fi 后仍允许排队 RX 中断分派的问题，保留启动 ALIVE 与 RF-kill 通知；
+- 继承前面的修复：WPA3-Personal（SAE，默认 **H2E-only**）、AP RSNXE 与四次握手校验、扫描期误判整卡故障、发送队列排空失败触发整卡重启、连接状态上报、MLO/6 GHz 映射、EHT 打孔位图校验。
+
+> **Wi-Fi 7 说明（重要）**：BE200 是 Wi-Fi 7 硬件，但驱动目前只做到 **802.11a/b/g/n/ac + HE(802.11ax) = Wi-Fi 6/6E**。
+> **macOS 15 上不支持 Wi-Fi 7（EHT/802.11be）**；macOS 26 上 EHT/MLO 仍属公测、尚未实测。
+> 也就是说：15 和 26 都请按 Wi-Fi 6 / 6E 使用，不要期待 11be 的速率。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
-**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX22_20261030` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX24_20261030` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
 
 > **连接建议（2026-10-30 更新）：WPA3-Personal（SAE）已实测可用**，可以直接用 H2E 的 WPA3 热点。
 >
@@ -189,17 +206,21 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 ## 4. 目录结构
 
 ```text
-├── EFI/                          ← 直接复制到 ESP 根目录（保留 Windows 的 EFI/Microsoft）
+├── EFI-Sequoia/                  ← macOS 15 用；把里面的内容（BOOT/ + OC/）拷到 ESP 根目录
 │   ├── BOOT/BOOTx64.efi
 │   └── OC/
-│       ├── ACPI/                 ← DSDT + 9 个 SSDT
+│       ├── ACPI/                 ← DSDT + 9 个 SSDT（与 26 共用同一套）
 │       ├── Drivers/              ← HfsPlus / OpenRuntime / ResetNvramEntry / OpenCanopy
-│       ├── Kexts/               ← 28 个 kext bundle（Kernel>Add 35 项，4 项默认禁用）
+│       ├── Kexts/                ← 28 个 kext bundle（含 AirportItlwm-Sequoia-BE200、AW88399Driver）
 │       ├── Resources/            ← OpenCanopy 图标/字体/语音
 │       ├── Tools/                ← NullMothSafe.efi
-│       ├── Logs/                 ← OpenCore 启动日志落盘目录
+│       ├── Logs/                 ← OpenCore 日志落盘目录（默认关闭，排错时再开）
 │       ├── config.plist          ← 当前配置（三码已清空，需自行填写）
 │       └── OpenCore.efi
+├── EFI-Tahoe/                    ← macOS 26 用；同样把里面的内容拷到 ESP 根目录
+│   ├── BOOT/BOOTx64.efi
+│   └── OC/                       ← Tahoe 专用 kext（NMHDA / SimpleHDA / AW88399 25.x / AirportItlwm-Tahoe-BE200 / IntelBT 25x）
+├── README-macOS26-Tahoe.md       ← macOS 26 EFI 的详细说明（改动清单、取舍、排错）
 ├── docs/
 │   ├── AUDIO-AW88399.md          ← 声卡拓扑、Linux 对照、验证与排错
 │   ├── CHANGELOG.md              ← 变更记录
@@ -220,7 +241,9 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 > 详细步骤见 [docs/INSTALL.md](docs/INSTALL.md)。
 
 1. **备份**你现在能启动的 EFI 到另一块盘或 U 盘。
-2. 把本包的 `EFI/` 复制到 FAT32 的 EFI 分区根目录（**保留** `EFI/Microsoft`，否则 Windows 引导会丢）。
+2. 按系统选一份 EFI，把**里面的内容**（`BOOT/` + `OC/`）复制到 FAT32 的 EFI 分区根目录（**保留** `EFI/Microsoft`，否则 Windows 引导会丢）：
+   - macOS 15 → `EFI-Sequoia/`
+   - macOS 26 → `EFI-Tahoe/`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
 3. 用 GenSMBIOS 生成 **`MacBookPro16,2`** 的三码：`SystemSerialNumber`、`MLB`、`SystemUUID`；
    `ROM` 填有线/无线网卡的 MAC（去掉分隔符，6 字节）。
 4. 用 ProperTree / Xcode 填进 `config.plist` 的 `PlatformInfo > Generic`。
@@ -248,10 +271,27 @@ BIOS 版本 **78WW** 为本机实测可用版本；换 BIOS 版本请重新核�
 
 ## 7. 启动参数
 
+**macOS 15（`EFI-Sequoia/`）**
+
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
+
+**macOS 26（`EFI-Tahoe/`）** —— 多出来的 4 个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
+
+```text
+-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta -btlfxbe200key gfxrst=4
+nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
+amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
+```
+
+| 只在 26 上需要的参数 | 为什么 |
+| --- | --- |
+| `gfxrst=4` | 装了 WhateverGreen 就必须加，否则 WEG 的开机画面拷贝会读到已释放内存 → panic |
+| `-ibtcompatbeta` | macOS 26 上用 Intel 蓝牙必须加（Dortania 明确写的） |
+| `-btlfxbe200key` | 配合 26 那套 BE200 蓝牙 kext |
 
 | 参数 | 作用 |
 | --- | --- |
@@ -272,14 +312,17 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 ## 8. 为什么开机可能黑屏 ~98 秒
 
 内屏由独显输出。NullMoth 驱动把内屏接起来的过程没有任何东西往控制台打印，画面就停在最后几行（`VoodooI2C…` / `Notification consumer published…` 之类）。
-**没装 NVIDIA 驱动时不会有这段黑屏**，但也不会有内屏画面——那时只能靠旧帧缓冲（黑屏+光标）。这是驱动装入前后的正常差异，与 EFI 无关。
+
+**没装 NVIDIA 驱动时的实际表现（2026-10-31 在 macOS 26 上实测）**：系统**能进桌面**，但画面只有 **约 1–3 FPS** —— 鼠标要拖很久才动，窗口几乎画不出来。原因是此时只有固件/旧帧缓冲在推像素，没有 GPU 加速。装上 NullMoth 驱动后恢复正常帧率。
+
+所以在 26 上"能进系统但卡成幻灯片"不是 EFI 配错了，而是**还没装显卡驱动**；在 15 上同理（只是 15 那套软件渲染略好一点）。
 
 ---
 
 ## 9. 已知限制
 
 - 只针对 **83F5 + ALC287 + 双 AW88399 + BE200**；其他 Legion 型号、其他 codec、其他功放拓扑不要直接套用。
-- **Wi-Fi 的限制**：**WPA3-Personal（SAE）已实测可用，但要求 AP 支持 H2E**（驱动默认 H2E-only；只支持 HnP 的 AP 连不上，可退回 WPA2）。6 GHz 关联仍待现场验证；**Wi-Fi 7/EHT/MLO 未测试**；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
+- **Wi-Fi 的限制**：**WPA3-Personal（SAE）已实测可用，但要求 AP 支持 H2E**（驱动默认 H2E-only；只支持 HnP 的 AP 连不上，可退回 WPA2）。**macOS 15 不支持 Wi-Fi 7（EHT/802.11be）；26 上 EHT/MLO 仍为公测、未实测**。6 GHz 关联仍待现场验证；没有隔空投送 / AWDL。Wi-Fi 6 的 HE 能力依赖 boot-args 的 `itlwm_he=1`，去掉会退回 11ac。
 - **蓝牙 A2DP**：补丁版 `BlueToolFixup` 依赖 `-btlfxa2dpcheck` 才生效；`IntelBluetoothFirmware` / `IntelBTPatcher` 保持原版，不要一起换版本。
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
@@ -341,10 +384,20 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 
 ---
 
+- **2026-10-31 — 拆成 15 / 26 两份 EFI，Wi-Fi 升到 `_FIX24_20261030`**：
+  - 仓库结构改为 `EFI-Sequoia/`（macOS 15）+ `EFI-Tahoe/`（macOS 26）；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全一致，只有 **Wi-Fi、蓝牙、声卡（AppleHDA）这几组 kext 和 boot-args 按系统版本不同**；
+  - **macOS 26 实测可以进桌面**：未装 NVIDIA 驱动时约 **1–3 FPS**（软件帧缓冲），装完 NullMoth 驱动正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md)；
+  - Wi-Fi 两套都换到 **2.4.0 `_FIX24_20261030`**（`AirportItlwm-Sequoia-BE200` / `AirportItlwm-Tahoe-BE200`）：国家码/监管域优先级与授权状态、RNR→6 GHz 定向探测、多链路信道与带宽校验、关闭 Wi-Fi 后的 RX 中断队列；
+  - **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax；26 上 EHT/MLO 仍为公测、未实测；
+  - 两份 EFI 的 `Misc > Debug` 默认关闭（`Target=0`）；要抓 `OC\Logs` 日志时把 `Target=67`、`DisplayLevel=2147483650`、`AppleDebug/ApplePanic=true` 打开。
+
+---
+
 ## 13. 文档索引
 
 - [EFI 细节](docs/EFI-DETAILS.md)：ACPI、Kext、config 各段、Quirks、启动参数
 - [声卡原理](docs/AUDIO-AW88399.md)：ALC287 + AW88399 拓扑、Linux 对照、验证与排错
+- [**macOS 26（Tahoe）EFI 说明**](README-macOS26-Tahoe.md)：两份 EFI 的取舍、改动清单、装驱动顺序、排错
 - [安装步骤](docs/INSTALL.md)：BIOS、三码、复制 EFI、首次启动
 - [故障排查](docs/TROUBLESHOOTING.md)：启动、声卡、Wi-Fi、触摸板、NVIDIA
 - [变更记录](docs/CHANGELOG.md)
@@ -357,7 +410,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 - [Acidanthera](https://github.com/acidanthera)：OpenCore、Lilu、VirtualSMC、WhateverGreen、AppleALC、VoodooInput
 - [VoodooI2C](https://github.com/VoodooI2C/VoodooI2C)：I2C 触摸板与设备 nub
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
-- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX3_20261027` 构建来源，尚未合并进上游主仓库）
+- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX24_20261030` 构建来源，尚未合并进上游主仓库）
 - [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
 - NullMoth 2.6.2：NVIDIA 驱动与工具链（本包不含驱动）
 - Linux 侧参考：[16iax10h-linux-sound-saga](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga)、[作者博客](https://www.wsjj.top/archives/176)

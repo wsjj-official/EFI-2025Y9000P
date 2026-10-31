@@ -44,6 +44,11 @@ EFI/OC/Logs/OpenCore-YYYY-MM-DD-HHMMSS.txt
 
 ---
 
+> **进得去系统、但只有 1–3 FPS（macOS 26 实测）**：这不是 EFI 的问题，是**还没装 NVIDIA 驱动**。
+> 内屏接在独显上，没有 NullMoth 驱动时只有固件/旧帧缓冲在推像素，鼠标要拖很久才动、窗口画不出来。
+> 装完驱动（`NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` + `NVMTLDriver`）后恢复正常帧率。
+> 详见 [README-macOS26-Tahoe.md](../README-macOS26-Tahoe.md) 第 5 节。
+
 ## 2. 声卡
 
 ### 2.1 一键检查

@@ -1,6 +1,16 @@
 # EFI 细节
 
-本文对应 `Legion-Y9000P-IAX10H-EFI-v1.0`，记录目录、ACPI、Kext、`config.plist` 各段、Quirks 和启动参数。配置以 2026-10-27 在 83F5 实机启动的版本为准。
+本文记录仓库两份 EFI 的目录、ACPI、Kext、`config.plist` 各段、Quirks 和启动参数。配置以 83F5 实机验证过的版本为准。
+
+> **两份 EFI（2026-10-31 起）**
+>
+> | 目录 | 目标系统 | 差异 |
+> | --- | --- | --- |
+> | `EFI-Sequoia/` | macOS 15.2+ | Wi-Fi 用 `AirportItlwm-Sequoia-BE200`；蓝牙用 `IntelBluetoothFirmware 2.5.0` + `IntelBTPatcher 2.5.0`；`boot-args` 无 `gfxrst=4` / `-ibtcompatbeta` |
+> | `EFI-Tahoe/` | macOS 26.4+ | Wi-Fi 用 `AirportItlwm-Tahoe-BE200`；蓝牙用 `IntelBluetoothFirmware 2.5.1` + `IntelBTPatcher-BE200-25x`；多 `SimpleHDA` / `NMHDA`；`boot-args` 多 `gfxrst=4`、`-ibtcompatbeta`、`-btlfxbe200key`；`Kernel>Block` 多一条 `IONDRVSupport`（NullMoth 要求） |
+>
+> 其余（ACPI 10 张表、Booter、DeviceProperties、PlatformInfo、USB 图）两份**完全一致**。
+> 文末「启动参数」一节同时列出两份的取值。
 
 ---
 
@@ -150,7 +160,10 @@ EFI/
 | VoodooInput | `me.kishorprins.VoodooInput` | 1.1.7 | 触摸板输入抽象 |
 | VoodooI2CHID | `com.alexandred.VoodooI2CHID` | 1 | I2C HID 触摸板 |
 | VoodooPS2Controller | `as.acidanthera.voodoo.driver.PS2Controller` | 2.3.8 | PS2 键盘/鼠标 |
-| AirportItlwm | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX22_20261030`（Sequoia BE200） | BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**WPA3-Personal（SAE/H2E）可用**，WPA2 也可用 |
+| AirportItlwm（Sequoia） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX24_20261030` | 仅 `EFI-Sequoia/`；BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**WPA3-Personal（SAE/H2E）可用**；**macOS 15 不支持 Wi-Fi 7（EHT）** |
+| AirportItlwm（Tahoe） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX24_20261030` | 仅 `EFI-Tahoe/`；同上，但用 Tahoe 版二进制（IO80211/Skywalk ABI 与 15 不同）；`MinKernel 25.4.0` |
+| SimpleHDA / NMHDA | `cn.laobamac.SimpleHDA` / `com.nullmoth.NMHDA` | 1.0.0 | 仅 `EFI-Tahoe/`：macOS 26 移除了 AppleHDA，靠它们把 HDA 驱动找回来 |
+| IntelBluetoothFirmware / IntelBTPatcher | `com.zxystd.*` | 2.5.0（15）/ 2.5.1 + `-BE200-25x`（26） | 蓝牙；26 用 BE200 专用 patcher，需 `-ibtcompatbeta` / `-btlfxbe200key` |
 | IntelBluetoothFirmware | `com.zxystd.IntelBluetoothFirmware` | 2.5.0 | Intel 蓝牙固件 |
 | IntelBTPatcher | `com.zxystd.IntelBTPatcher` | 2.5.0 | 蓝牙补丁 |
 | BlueToolFixup（FixA2DP） | `as.acidanthera.BlueToolFixup` | 2.7.3 | 蓝牙 A2DP 会话恢复修复；需 `-btlfxa2dpcheck` |
@@ -481,10 +494,21 @@ EFI/
 
 ## 6. 启动参数逐项
 
+**`EFI-Sequoia/`（macOS 15）**
+
 ```text
 -v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
+```
+
+**`EFI-Tahoe/`（macOS 26）**
+
+```text
+-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta -btlfxbe200key gfxrst=4
+nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
+amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
 ```
 
 | 参数 | 作用 | 能否去掉 |

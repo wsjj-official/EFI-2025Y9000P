@@ -189,3 +189,30 @@
 
 - `EFI/OC/config.plist`：Wi-Fi kext 换新，条目注释标注 `_FIX22_20261030`。
 - README（Wi-Fi 状态行、§3.1 驱动变化与「连接建议」、§9 已知限制、§12 更新记录）；`docs/TROUBLESHOOTING.md`（3.2 / 3.2.1 改为 WPA3 可用 + H2E 前提与对照方法）；`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`。
+
+---
+
+## 2026-10-31 — 拆成 macOS 15 / 26 两份 EFI；Wi-Fi 升到 `_FIX24_20261030`
+
+### 结构
+
+- 仓库改为 `EFI-Sequoia/`（macOS 15.2+）与 `EFI-Tahoe/`（macOS 26.4+）两份并列，各自是 `BOOT/` + `OC/` 直接展开的形态；
+- 两份的 ACPI（10 张表）、Booter、DeviceProperties、PlatformInfo、USB 端口图**完全一致**，差异只在 Wi-Fi / 蓝牙 / AppleHDA 这几组 kext 与 `boot-args`。
+
+### macOS 26（新增）
+
+- 实测**可以进桌面**；**未装 NullMoth 驱动时约 1–3 FPS**（固件/旧帧缓冲在推像素），装完驱动恢复正常；
+- 换入 Tahoe 专用件：`AirportItlwm-Tahoe-BE200`、`IntelBluetoothFirmware-2.5.1`、`IntelBTPatcher-BE200-25x`、`SimpleHDA`、`NMHDA`、`AW88399Driver`(25.x)；
+- `Kernel>Block` 增加 `com.apple.iokit.IONDRVSupport`（NullMoth 要求，防固件 framebuffer 抢 display 0）；
+- `boot-args` 增加 `gfxrst=4`（装了 WhateverGreen 必需）、`-ibtcompatbeta`、`-btlfxbe200key`。
+
+### Wi-Fi（两份都换）
+
+- `AirportItlwm` 升到 **2.4.0 `_FIX24_20261030`**：国家码/监管域优先级（启动参数 → 固件 → 定位）与授权状态分离、监管请求被拒不再锁死后续更新、复位后硬件接管与定时器生命周期、RNR 邻居报告 → 6 GHz 定向探测、多链路信道/带宽统一校验、关闭 Wi-Fi 后 RX 中断队列；
+- **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax（Wi-Fi 6/6E）；26 上 EHT/MLO 仍为公测、未实测。
+
+### 其它
+
+- 两份 EFI 的 `Misc > Debug` 默认关闭（`Target=0`、`DisplayLevel=0`、`AppleDebug/ApplePanic=false`）；排错时改回 `67 / 2147483650 / true / true`；
+- 新增 `README-macOS26-Tahoe.md`（26 包的改动清单、取舍、装驱动顺序、排错），并同步 README / `docs/EFI-DETAILS.md` / `docs/INSTALL.md` / `docs/TROUBLESHOOTING.md` / `THIRD-PARTY.md`；
+- 清理 `config.plist.before-*` 备份文件，不随仓库发布。
