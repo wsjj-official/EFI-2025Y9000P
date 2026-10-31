@@ -160,8 +160,8 @@ EFI/
 | VoodooInput | `me.kishorprins.VoodooInput` | 1.1.7 | 触摸板输入抽象 |
 | VoodooI2CHID | `com.alexandred.VoodooI2CHID` | 1 | I2C HID 触摸板 |
 | VoodooPS2Controller | `as.acidanthera.voodoo.driver.PS2Controller` | 2.3.8 | PS2 键盘/鼠标 |
-| AirportItlwm（Sequoia） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX24_20261030` | 仅 `EFI-Sequoia/`；BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**WPA3-Personal（SAE/H2E）可用**；**macOS 15 不支持 Wi-Fi 7（EHT）** |
-| AirportItlwm（Tahoe） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX24_20261030` | 仅 `EFI-Tahoe/`；同上，但用 Tahoe 版二进制（IO80211/Skywalk ABI 与 15 不同）；`MinKernel 25.4.0` |
+| AirportItlwm（Sequoia） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX26_20261031` | 仅 `EFI-Sequoia/`；BE200 Wi-Fi；HE/6 GHz 需 `itlwm_he=1`；**WPA3-Personal（SAE/H2E）可用**；**macOS 15 不支持 Wi-Fi 7（EHT）** |
+| AirportItlwm（Tahoe） | `com.zxystd.AirportItlwm` | 2.4.0 `_FIX26_20261031` | 仅 `EFI-Tahoe/`；同上，但用 Tahoe 版二进制（IO80211/Skywalk ABI 与 15 不同）；`MinKernel 25.4.0` |
 | SimpleHDA / NMHDA | `cn.laobamac.SimpleHDA` / `com.nullmoth.NMHDA` | 1.0.0 | 仅 `EFI-Tahoe/`：macOS 26 移除了 AppleHDA，靠它们把 HDA 驱动找回来 |
 | IntelBluetoothFirmware / IntelBTPatcher | `com.zxystd.*` | 2.5.0（15）/ 2.5.1 + `-BE200-25x`（26） | 蓝牙；26 用 BE200 专用 patcher，需 `-ibtcompatbeta` |
 | IntelBluetoothFirmware | `com.zxystd.IntelBluetoothFirmware` | 2.5.0 | Intel 蓝牙固件 |

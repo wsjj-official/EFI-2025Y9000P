@@ -125,6 +125,16 @@
 
 ---
 
+## 2026-10-31 晚 — Wi-Fi 升到 `_FIX26_20261031`（15 / 26 两份同步）
+
+- 两份 EFI 的 Wi-Fi kext 都换到 **2.4.0 `_FIX26_20261031`**：`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 用 `AirportItlwm-Tahoe-BE200`。
+- 主要修复：**端口授权**（此前 WPA2/WPA3 关联与认证都过，但链路不建立、DHCP 拿不到地址）；RX 设备状态校验拒绝全 1 读数；直通模式只解析固件实际写入的数据；关联态扫描离/回主信道时长成对下发；接受 Cisco/Apple **Fast Lane**；高带宽信道块非法时自动 160→80→40→20 降带宽。
+- 继承：BA 会话/重排计时器、MPDU 载荷边界、密钥槽重置、国家码以固件答复为准、6 GHz 开机后主动通知重读、6 GHz 后台扫描只扫 PSC、连接前结清扫描、密钥安装排队、离开 WPA3/PMF 发保护性解除关联帧、默认关闭省电、WPA3-Personal（SAE/H2E）。
+- 仍为公测：Wi-Fi 7（EHT/MLO）；**macOS 15 不支持 Wi-Fi 7**。
+- 同步更新 README（Wi-Fi 段 / 状态表 / 更新记录）、`README-macOS26-Tahoe.md`、`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`。
+
+---
+
 ## 2026-10-31 晚 — macOS 26 蓝牙换 FixA2DP，修 AirPods「连上没声」
 
 - `EFI-Tahoe/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**。

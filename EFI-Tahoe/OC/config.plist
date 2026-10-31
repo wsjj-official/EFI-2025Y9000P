@@ -1027,7 +1027,7 @@
 				<key>BundlePath</key>
 				<string>AirportItlwm-Tahoe-BE200.kext</string>
 				<key>Comment</key>
-				<string>BE200 native Tahoe build 2.4.0_FIX24_20261030; Darwin 25 only</string>
+				<string>macOS 26 BE200 Tahoe build 2.4.0_FIX26_20261031 (port authorize fix, RX validation, Fast Lane, 160-&gt;20 fallback); added 8086:272B match</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>

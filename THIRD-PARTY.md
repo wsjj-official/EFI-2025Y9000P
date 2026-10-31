@@ -15,7 +15,7 @@
 | VoodooI2C（dual-resource 补丁） | 2.9.1 | <https://github.com/VoodooI2C/VoodooI2C> | GPL-3.0 |
 | VoodooI2CHID | 1 | <https://github.com/VoodooI2C/VoodooI2C> | GPL-3.0 |
 | VoodooPS2Controller | 2.3.8 | <https://github.com/acidanthera/VoodooPS2> | GPL-2.0 |
-| AirportItlwm（BE200，**内测分支**） | 2.4.0 `_FIX24_20261030`（Sequoia / Tahoe 两套构建） | <https://github.com/Ersiter/AirportItlwm-BE200>（源自 <https://github.com/OpenIntelWireless/itlwm>） | GPL-2.0 |
+| AirportItlwm（BE200，**内测分支**） | 2.4.0 `_FIX26_20261031`（Sequoia / Tahoe 两套构建） | <https://github.com/Ersiter/AirportItlwm-BE200>（源自 <https://github.com/OpenIntelWireless/itlwm>） | GPL-2.0 |
 | SimpleHDA | 1.0.0 | <https://github.com/laobamac/SimpleHDA>（macOS 26 上恢复 AppleHDA） | 见上游 |
 | NMHDA | 1.0.0 | NullMoth 工具链（macOS 26 的 HDA 适配） | 见上游 |
 | IntelBluetoothFirmware | 2.5.0（15）/ 2.5.1（26） | <https://github.com/OpenIntelWireless/IntelBluetoothFirmware> | GPL-2.0 |

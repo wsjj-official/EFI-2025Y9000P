@@ -24,7 +24,7 @@ eb3fda04c0e8c8ce0ef4cfc984dcfb771db6aee476d379bd4bc3b7a74a00e4e9  ./EFI-Sequoia/
 1e927c9bca76d868181c0f81df2bccef3cf19c7d0910219f229360c87babd42c  ./EFI-Sequoia/OC/Kexts/AW88399Driver.kext/Contents/Resources/aw88399_acf.bin
 c6308891becfff8fcbaf5e2116e45d7783100c01761d5bae09c5ff840a3f3c2f  ./EFI-Sequoia/OC/Kexts/AW88399Driver.kext/Contents/_CodeSignature/CodeResources
 6a8ac8d9540e70f4abbf317c1d80bdeb338ea66ca8e2b75b01c64f96f3867487  ./EFI-Sequoia/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/Info.plist
-44b3b9d78d3e6d79e6456f96ccff353c37e27f1675ab47e783d83e55b35dacf5  ./EFI-Sequoia/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/MacOS/AirportItlwm
+4097e061bbd4691d6e39fe040aac7164c9815a4d1cd301d14eb7241e8e43d36b  ./EFI-Sequoia/OC/Kexts/AirportItlwm-Sequoia-BE200.kext/Contents/MacOS/AirportItlwm
 4735730c092b2099164c7a053acc9c8b8693c96b70fc650780f73e96b7c54ac3  ./EFI-Sequoia/OC/Kexts/AppleALC.kext/Contents/Info.plist
 2f4460f57eb7c037b532239c5a5ee33bb6c353798d83321faba4421cb52344f6  ./EFI-Sequoia/OC/Kexts/AppleALC.kext/Contents/MacOS/AppleALC
 5b71d13a9e6cc70604ce6635398a6a4d7581aecee53b7613f6d89056d4cd475e  ./EFI-Sequoia/OC/Kexts/AppleIGC.kext/Contents/Info.plist
@@ -198,7 +198,7 @@ ef2b6cd9fc4e11c3ed558555fcfbe9fb3377fd5d87212ceb5e1dc1fa945e0445  ./EFI-Sequoia/
 c64885a9f5b7717321a49927de98f14d19cbb7ae121a1d0f9f62d7d74daf43e0  ./EFI-Sequoia/OC/Resources/Label/Windows.l2x
 a19afffbcff69562165a6ec37125f07b140dc58f0f14d1522c326c5cab3c09b3  ./EFI-Sequoia/OC/Resources/Label/Windows.lbl
 f99c1fa37693521d414c000059d69f991740bce9d33507da8f7b5113689d3f70  ./EFI-Sequoia/OC/Tools/NullMothSafe.efi
-61e252628a6b47631febf48bce6962c95720a291dd4669b183afdd5d2e85d1d6  ./EFI-Sequoia/OC/config.plist
+975840c6c478fd8d9103a48b2782fbf985d1028c480f5c89bbbdb18a60e22f6d  ./EFI-Sequoia/OC/config.plist
 5546c5dcc63bda3b1a8a4a732c69fd6fa645cb2b31b16f18e62453318104f3b7  ./EFI-Tahoe/BOOT/.contentFlavour
 75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d  ./EFI-Tahoe/BOOT/.contentVisibility
 d0163dfbe5d2ea46aececd7d7349acfa5b75dfed2993e8489816f3dda71914c8  ./EFI-Tahoe/BOOT/BOOTx64.efi
@@ -224,7 +224,7 @@ eb3fda04c0e8c8ce0ef4cfc984dcfb771db6aee476d379bd4bc3b7a74a00e4e9  ./EFI-Tahoe/OC
 1e927c9bca76d868181c0f81df2bccef3cf19c7d0910219f229360c87babd42c  ./EFI-Tahoe/OC/Kexts/AW88399Driver.kext/Contents/Resources/aw88399_acf.bin
 c6308891becfff8fcbaf5e2116e45d7783100c01761d5bae09c5ff840a3f3c2f  ./EFI-Tahoe/OC/Kexts/AW88399Driver.kext/Contents/_CodeSignature/CodeResources
 a8a0340c3e0c60f8e2e35b58985b6347343e1446215b9c4f7ae7126349e03a0c  ./EFI-Tahoe/OC/Kexts/AirportItlwm-Tahoe-BE200.kext/Contents/Info.plist
-80299e946fa44747342c4f3b8f4c41a569fba32cd9f678b55b86a5e44447ae46  ./EFI-Tahoe/OC/Kexts/AirportItlwm-Tahoe-BE200.kext/Contents/MacOS/AirportItlwm
+18583a4c75c9e9fb0c194b2859a3abdc5ce58e59a971cfc9422746c6bb0cd328  ./EFI-Tahoe/OC/Kexts/AirportItlwm-Tahoe-BE200.kext/Contents/MacOS/AirportItlwm
 4735730c092b2099164c7a053acc9c8b8693c96b70fc650780f73e96b7c54ac3  ./EFI-Tahoe/OC/Kexts/AppleALC.kext/Contents/Info.plist
 2f4460f57eb7c037b532239c5a5ee33bb6c353798d83321faba4421cb52344f6  ./EFI-Tahoe/OC/Kexts/AppleALC.kext/Contents/MacOS/AppleALC
 5b71d13a9e6cc70604ce6635398a6a4d7581aecee53b7613f6d89056d4cd475e  ./EFI-Tahoe/OC/Kexts/AppleIGC.kext/Contents/Info.plist
@@ -403,13 +403,13 @@ ef2b6cd9fc4e11c3ed558555fcfbe9fb3377fd5d87212ceb5e1dc1fa945e0445  ./EFI-Tahoe/OC
 c64885a9f5b7717321a49927de98f14d19cbb7ae121a1d0f9f62d7d74daf43e0  ./EFI-Tahoe/OC/Resources/Label/Windows.l2x
 a19afffbcff69562165a6ec37125f07b140dc58f0f14d1522c326c5cab3c09b3  ./EFI-Tahoe/OC/Resources/Label/Windows.lbl
 f99c1fa37693521d414c000059d69f991740bce9d33507da8f7b5113689d3f70  ./EFI-Tahoe/OC/Tools/NullMothSafe.efi
-b4e0b5613fef96a49e413b62cd2603798c91be25da5183ad8bc323feddb0bad1  ./EFI-Tahoe/OC/config.plist
-91c3ce5e8d5b2cf3bc9b0654194da75bd33e7dff4d228fbe5220e6ce09717aa2  ./README-macOS26-Tahoe.md
-fcd77fa13bf103d58df17258fc56343aacdd11f8c502a6bef495e516f47b135d  ./README.md
-ccd2ba462fa67a05b394df0a2d2878b352c31279dd4e5c4c7e89d3f7c6543a21  ./THIRD-PARTY.md
+889c4506bfb3d7f7c6a880459274f888546eff7893b26aab90d20904571a7ccc  ./EFI-Tahoe/OC/config.plist
+141d8cdddbd2122efba755ffe56366e6d7b921cd837d2cbf7b3a619b305791a4  ./README-macOS26-Tahoe.md
+2186181185ff7b9e203be91caa86e8de2c24c6c4bfdf020355970412aa55a412  ./README.md
+65ca53f9d3211614e005fe7f65e2c3412b00e994573a9f3c66a4fab55a3212bf  ./THIRD-PARTY.md
 a1947af27d0d8242192542666d331badd0eb3be1528b6e86b9ba5cfecffafe7d  ./docs/AUDIO-AW88399.md
-3e1e5b71781c1c9c7367fd6c7e454589d56b5965f1c03c91c71f0df592b25583  ./docs/CHANGELOG.md
-1c537c650cea8815d85347888705be7c01391b9d579f536763bc41332a36cad3  ./docs/EFI-DETAILS.md
+9b52502cf3ff756590b7bd6b883bab8f7e75840843f49f1020d32e39dc1670b4  ./docs/CHANGELOG.md
+14f1fdcb5eed58837b8954828156638f430c97b4105868685c0b2d728bbb4ba4  ./docs/EFI-DETAILS.md
 9083f268e17faf46ebd11f8c07dab268c4437a08d81a32458a1d93ea7edb2df9  ./docs/INSTALL.md
 8cfa04c9521ca4325647725263a4e67d31d39d8aa5c160a41614f78b930bc7c3  ./docs/TROUBLESHOOTING.md
 25c393421e01578ce71aa99ad46c1c672612302717ade320c6673d35f3278ed8  ./tools/check-audio.sh
