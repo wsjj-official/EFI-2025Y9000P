@@ -1,7 +1,7 @@
 # macOS 26（Tahoe）可开机 EFI — 说明与改动清单
 
 适用机器：Lenovo Legion Y9000P IAX10H / 83F5 / Core Ultra 9 275HX / RTX 5070 Ti Laptop
-对应仓库目录：**`EFI-Tahoe/`**（macOS 26 用）；对照的是同仓库的 `EFI-Sequoia/`（macOS 15，长期验证）
+对应仓库目录：**`EFI-Tahoe/EFI/`**（macOS 26 用）；对照的是同仓库的 `EFI-Sequoia/`（macOS 15，长期验证）
 参考包：外部拿到的 `Tahoe-EFI-share`（别人做的 macOS 26 适配起点，作者自己标注 "not ready to boot"）
 
 ---
@@ -277,16 +277,16 @@ E:\macos\_work\verify_fix24.py            ← 四个 EFI 的复核脚本
 
 | 目录 | 内容 |
 | --- | --- |
-| `EFI-Tahoe/` | **仓库里的 macOS 26 包**：`BOOT/` + `OC/` 直接展开 |
-| `EFI-Sequoia/` | 同仓库的 macOS 15 包，结构相同 |
+| `EFI-Tahoe/EFI/` | **仓库里的 macOS 26 包**：里面就是 `BOOT/` + `OC/`，整个 `EFI` 拷到 ESP 根目录即可，不用改名 |
+| `EFI-Sequoia/EFI/` | 同仓库的 macOS 15 包，结构相同 |
 
-放 EFI 分区时，把选中那份的**内容**（`BOOT/` + `OC/`）拷到分区根目录即可；两份**不要同时拷**。
+放 EFI 分区时，把选中那份的 `EFI` 目录整个拷到分区根目录即可（**不用改名**）；两份**不要同时拷**。
 
 校验（在仓库根目录）：
 
 ```powershell
-Get-FileHash "EFI-Tahoe/OC/config.plist" -Algorithm SHA256
-Get-FileHash "EFI-Sequoia/OC/config.plist" -Algorithm SHA256
+Get-FileHash "EFI-Tahoe/EFI/OC/config.plist" -Algorithm SHA256
+Get-FileHash "EFI-Sequoia/EFI/OC/config.plist" -Algorithm SHA256
 ```
 
 ---
@@ -330,7 +330,7 @@ Get-FileHash "EFI-Sequoia/OC/config.plist" -Algorithm SHA256
 
 6. **（2026-10-31 晚）蓝牙换成 FixA2DP 版。**
 
-   - `EFI-Tahoe/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**，修 AirPods「连上但没声」；
+   - `EFI-Tahoe/EFI/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**，修 AirPods「连上但没声」；
    - `boot-args`：去掉 `-btlfxbe200key`，加 `-btlfxa2dpcheck`；`-ibtcompatbeta` 保留；`-btlfxbeta` 在 26.x 上不需要；
    - `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` **不动**（与修复包里的哈希一致）；
    - 回滚：换回旧 `BlueToolFixup.kext`（仓库外备份 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）并把参数换回 `-btlfxbe200key`；

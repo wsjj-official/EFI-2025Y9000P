@@ -6,10 +6,10 @@
 
 | 目录 | 目标系统 | 状态 |
 | --- | --- | --- |
-| [`EFI-Sequoia/`](EFI-Sequoia) | **macOS 15 Sequoia**（15.2+） | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
-| [`EFI-Tahoe/`](EFI-Tahoe) | **macOS 26 Tahoe**（26.4+） | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
+| [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
+| [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
 
-> 两份都是「`BOOT/` + `OC/` 直接展开」的形态，把选中那份的**内容**拷到 ESP 根目录即可（保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
+> 两份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
 > **不要两份混拷**：Wi-Fi / 蓝牙 kext 是分系统版本的（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）。
 
 **这一版做成了这几件事：**
@@ -212,20 +212,22 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 ## 4. 目录结构
 
 ```text
-├── EFI-Sequoia/                  ← macOS 15 用；把里面的内容（BOOT/ + OC/）拷到 ESP 根目录
-│   ├── BOOT/BOOTx64.efi
-│   └── OC/
-│       ├── ACPI/                 ← DSDT + 9 个 SSDT（与 26 共用同一套）
-│       ├── Drivers/              ← HfsPlus / OpenRuntime / ResetNvramEntry / OpenCanopy
-│       ├── Kexts/                ← 28 个 kext bundle（含 AirportItlwm-Sequoia-BE200、AW88399Driver）
-│       ├── Resources/            ← OpenCanopy 图标/字体/语音
-│       ├── Tools/                ← NullMothSafe.efi
-│       ├── Logs/                 ← OpenCore 日志落盘目录（默认关闭，排错时再开）
-│       ├── config.plist          ← 当前配置（三码已清空，需自行填写）
-│       └── OpenCore.efi
-├── EFI-Tahoe/                    ← macOS 26 用；同样把里面的内容拷到 ESP 根目录
-│   ├── BOOT/BOOTx64.efi
-│   └── OC/                       ← Tahoe 专用 kext（NMHDA / SimpleHDA / AW88399 25.x / AirportItlwm-Tahoe-BE200 / IntelBT 25x）
+├── EFI-Sequoia/
+│   └── EFI/                      ← macOS 15 用：直接把这个 EFI 目录整个拷到 ESP 根目录（不用改名）
+│       ├── BOOT/BOOTx64.efi
+│       └── OC/
+│           ├── ACPI/             ← DSDT + 9 个 SSDT（与 26 共用同一套）
+│           ├── Drivers/          ← HfsPlus / OpenRuntime / ResetNvramEntry / OpenCanopy
+│           ├── Kexts/            ← 28 个 kext bundle（含 AirportItlwm-Sequoia-BE200、AW88399Driver）
+│           ├── Resources/        ← OpenCanopy 图标/字体/语音
+│           ├── Tools/            ← NullMothSafe.efi
+│           ├── Logs/             ← OpenCore 日志落盘目录（默认关闭，排错时再开）
+│           ├── config.plist      ← 当前配置（三码已清空，需自行填写）
+│           └── OpenCore.efi
+├── EFI-Tahoe/
+│   └── EFI/                      ← macOS 26 用：同样整个 EFI 拷到 ESP 根目录
+│       ├── BOOT/BOOTx64.efi
+│       └── OC/                   ← Tahoe 专用 kext（NMHDA / SimpleHDA / AW88399 25.x / AirportItlwm-Tahoe-BE200 / IntelBT 25x）
 ├── README-macOS26-Tahoe.md       ← macOS 26 EFI 的详细说明（改动清单、取舍、排错）
 ├── docs/
 │   ├── AUDIO-AW88399.md          ← 声卡拓扑、Linux 对照、验证与排错
@@ -247,9 +249,9 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 > 详细步骤见 [docs/INSTALL.md](docs/INSTALL.md)。
 
 1. **备份**你现在能启动的 EFI 到另一块盘或 U 盘。
-2. 按系统选一份 EFI，把**里面的内容**（`BOOT/` + `OC/`）复制到 FAT32 的 EFI 分区根目录（**保留** `EFI/Microsoft`，否则 Windows 引导会丢）：
-   - macOS 15 → `EFI-Sequoia/`
-   - macOS 26 → `EFI-Tahoe/`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
+2. 按系统选一份，把对应的 **`EFI` 目录整个**复制到 FAT32 的 EFI 分区根目录（不用改名；**保留** `EFI/Microsoft`，否则 Windows 引导会丢）：
+   - macOS 15 → `EFI-Sequoia/EFI`
+   - macOS 26 → `EFI-Tahoe/EFI`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
 3. 用 GenSMBIOS 生成 **`MacBookPro16,2`** 的三码：`SystemSerialNumber`、`MLB`、`SystemUUID`；
    `ROM` 填有线/无线网卡的 MAC（去掉分隔符，6 字节）。
 4. 用 ProperTree / Xcode 填进 `config.plist` 的 `PlatformInfo > Generic`。

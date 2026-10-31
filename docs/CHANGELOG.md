@@ -137,7 +137,7 @@
 
 ## 2026-10-31 晚 — macOS 26 蓝牙换 FixA2DP，修 AirPods「连上没声」
 
-- `EFI-Tahoe/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**。
+- `EFI-Tahoe/EFI/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**。
   原理：Apple 的 `bluetoothd` 在 AirPods 这类 Fast-Connect 设备重连时会先做 `HCI_Read_Clock`，Intel 控制器返回不了这个时钟，于是 A2DP 不发布音频；补丁把这道门控改成成功路径。
 - `EFI-Tahoe` 的 `boot-args`：**去掉 `-btlfxbe200key`、加 `-btlfxa2dpcheck`**；`-ibtcompatbeta` 保留；`-btlfxbeta` 在 26.x 不需要。
 - `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` 保持不动（与修复包 `SHA256.txt` 一致）。
@@ -217,7 +217,7 @@
 
 ### 结构
 
-- 仓库改为 `EFI-Sequoia/`（macOS 15.2+）与 `EFI-Tahoe/`（macOS 26.4+）两份并列，各自是 `BOOT/` + `OC/` 直接展开的形态；
+- 仓库改为 `EFI-Sequoia/EFI/`（macOS 15.2+）与 `EFI-Tahoe/EFI/`（macOS 26.4+）两份并列，各自是 `BOOT/` + `OC/` 直接展开的形态（外层 `EFI` 目录可直接拷到 ESP 根目录，不用改名）；
 - 两份的 ACPI（10 张表）、Booter、DeviceProperties、PlatformInfo、USB 端口图**完全一致**，差异只在 Wi-Fi / 蓝牙 / AppleHDA 这几组 kext 与 `boot-args`。
 
 ### macOS 26（新增）

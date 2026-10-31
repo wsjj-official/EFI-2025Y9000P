@@ -12,7 +12,7 @@
 - [ProperTree](https://github.com/corpnewt/ProperTree) 或 Xcode
 - 目标系统：macOS 15 Sequoia（实测 15.8 / 24H23）或 macOS 26 Tahoe（实测 26.7）
 
-> **先选 EFI**：macOS 15 用 `EFI-Sequoia/`，macOS 26 用 `EFI-Tahoe/`（两份 `BOOT/` + `OC/`，不要混拷）。
+> **先选 EFI**：macOS 15 用 `EFI-Sequoia/EFI/`，macOS 26 用 `EFI-Tahoe/EFI/`（整个 `EFI` 目录拷到 ESP 根目录，不用改名；两份不要混拷）。
 > macOS 26 的取舍与装驱动顺序见 [README-macOS26-Tahoe.md](../README-macOS26-Tahoe.md)。
 
 > 先把当前 EFI 整个 `EFI` 目录复制到 U 盘或另一块硬盘。不要在没有回退手段的情况下覆盖唯一可启动的 EFI。
