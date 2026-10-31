@@ -20,7 +20,7 @@
 | NMHDA | 1.0.0 | NullMoth 工具链（macOS 26 的 HDA 适配） | 见上游 |
 | IntelBluetoothFirmware | 2.5.0（15）/ 2.5.1（26） | <https://github.com/OpenIntelWireless/IntelBluetoothFirmware> | GPL-2.0 |
 | IntelBTPatcher | 2.5.0（15）/ `-BE200-25x`（26） | 同上 | GPL-2.0 |
-| BlueToolFixup（**FixA2DP 补丁版**） | 2.7.3 | <https://github.com/hexxyan/BlueToolFixup-FixA2DP>（基于 <https://github.com/acidanthera/BrcmPatchRAM>） | BSD-3-Clause |
+| BlueToolFixup（**FixA2DP 补丁版**，15/26 两份 EFI 均使用） | 2.7.3 | <https://github.com/hexxyan/BlueToolFixup-FixA2DP>（基于 <https://github.com/acidanthera/BrcmPatchRAM>） | BSD-3-Clause |
 | AppleIGC | 1.9d2 | <https://github.com/SongXiaoXi/AppleIGC> | 见上游 |
 | NVMeFix | 1.1.4 | <https://github.com/acidanthera/NVMeFix> | BSD-3-Clause |
 | RestrictEvents | 1.1.7 | <https://github.com/acidanthera/RestrictEvents> | BSD-3-Clause |

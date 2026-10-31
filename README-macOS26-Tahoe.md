@@ -77,7 +77,7 @@
 | `AirportItlwm-Tahoe-BE200.kext` | 2.4.0 `_FIX24_20261030` | 25.4.0–25.99.99 | BE200 的 Tahoe 版（IO80211 / Skywalk ABI 和 15 不一样，不能混用） |
 | `IntelBluetoothFirmware-2.5.1.kext` | 2.5.1 | 全部 | Intel 蓝牙固件（26 用） |
 | `IntelBTPatcher-BE200-25x.kext` | 2.5.0 | 全部 | BE200 专用 patcher（"25x" 就是给 Darwin 25） |
-| `BlueToolFixup.kext` | 2.7.3 | 21.0.0+ | 蓝牙栈修正，配合 `-ibtcompatbeta` |
+| `BlueToolFixup.kext` | 2.7.3 **FixA2DP**（42,464 B） | 21.0.0+ | 蓝牙栈修正 + A2DP 快连门控（`-btlfxa2dpcheck`）；原来的 BE200 实验版（`-btlfxbe200key`）已替换 |
 | `AW88399Driver.kext` | 0.2 | 25.0.0–25.99.99 | 两颗 AW88399 功放（0x34 / 0x35） |
 
 **被替换掉的 15 专用驱动**：`AirportItlwm-Sequoia-BE200`、`IntelBluetoothFirmware 2.5.0`、`IntelBTPatcher 2.5.0`
@@ -91,10 +91,10 @@ VoodooI2C 2.9.1、USBToolBox + 你的 UTBMap、YogaSMC、NVMeFix…）。
 ## 4. 最终 `boot-args`
 
 ```text
--v keepsyms=1 -vi2c-force-polling -ibtcompatbeta -btlfxbe200key gfxrst=4
+-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
 | 参数 | 来源 | 为什么必须在 |
@@ -103,7 +103,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
 | `amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0` | 15 | 让 WindowServer 能加载未签名的 `NVMTLDriver.bundle` |
 | `gfxrst=4` | 26 | **装了 WhateverGreen 就必须加**，否则 WEG 的开机画面拷贝会读到已释放内存 → panic |
 | `-ibtcompatbeta` | 26 | macOS 26 上用 Intel 蓝牙必须加（Dortania 明确写的） |
-| `-btlfxbe200key` | 26 | 配合 BE200 那套蓝牙 kext |
+| `-btlfxa2dpcheck` | 26（2026-10-31 起） | 启用 `BlueToolFixup` FixA2DP 的 A2DP 快连门控（解决 AirPods 连上没声）；取代原来的 `-btlfxbe200key`（BE200 实验版） |
 | `alcid=13 alcverbs=1` | 15 | ALC287 layout 13 + 共享 DAC 的 verb hook |
 | `itlwm_he=1` | 15 | BE200 的 HE / Wi-Fi 6 能力 |
 | `-vi2c-force-polling` | 15 | 触摸板 / SPKR 枚举更稳 |
@@ -325,6 +325,16 @@ Get-FileHash "EFI-Sequoia/OC/config.plist" -Algorithm SHA256
    - Wi-Fi 升到 **`2.4.0 _FIX24_20261030`**（26 用 `AirportItlwm-Tahoe-BE200`，15 用 `AirportItlwm-Sequoia-BE200`）。
    - **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax；26 上 EHT/MLO 仍为公测、未实测。
    - `Misc > Debug` 默认关闭（`Target=0`）；排错时改回 `67 / 2147483650 / true / true`。
+
+---
+
+6. **（2026-10-31 晚）蓝牙换成 FixA2DP 版。**
+
+   - `EFI-Tahoe/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**，修 AirPods「连上但没声」；
+   - `boot-args`：去掉 `-btlfxbe200key`，加 `-btlfxa2dpcheck`；`-ibtcompatbeta` 保留；`-btlfxbeta` 在 26.x 上不需要；
+   - `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` **不动**（与修复包里的哈希一致）；
+   - 回滚：换回旧 `BlueToolFixup.kext`（仓库外备份 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）并把参数换回 `-btlfxbe200key`；
+   - 两个补丁（A2DP 快连门控 / BE200 stored-key）目前没有合并版，只能二选一。
 
 ---
 

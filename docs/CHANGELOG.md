@@ -125,6 +125,17 @@
 
 ---
 
+## 2026-10-31 晚 — macOS 26 蓝牙换 FixA2DP，修 AirPods「连上没声」
+
+- `EFI-Tahoe/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**。
+  原理：Apple 的 `bluetoothd` 在 AirPods 这类 Fast-Connect 设备重连时会先做 `HCI_Read_Clock`，Intel 控制器返回不了这个时钟，于是 A2DP 不发布音频；补丁把这道门控改成成功路径。
+- `EFI-Tahoe` 的 `boot-args`：**去掉 `-btlfxbe200key`、加 `-btlfxa2dpcheck`**；`-ibtcompatbeta` 保留；`-btlfxbeta` 在 26.x 不需要。
+- `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` 保持不动（与修复包 `SHA256.txt` 一致）。
+- 代价：丢掉 BE200 stored-key 那条实验补丁；两条分支目前没有合并版，只能二选一。回滚备份在仓库外 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`。
+- 同步更新 README（26 启动参数块 + §3.4 蓝牙）、`README-macOS26-Tahoe.md`（kext 表 / 启动参数 / 变更记录）、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`。
+
+---
+
 ## 2026-10-29 — Wi-Fi `_FIX18_20261029` + 蓝牙 A2DP 修复
 
 ### Wi-Fi（BE200）

@@ -251,6 +251,12 @@ kmutil showloaded | grep -i itlwm
 4. `IntelBluetoothFirmware` / `IntelBTPatcher` **保持原版**，不要为了这个补丁一起换版本。
 5. 回退：换回原版 `BlueToolFixup` 2.7.3（acidanthera/BrcmPatchRAM），并从 boot-args 删掉 `-btlfxa2dpcheck`。
 
+**macOS 26 补充（2026-10-31）**：`EFI-Tahoe/` 原来用的是「BE200 stored-key 实验版」`BlueToolFixup`（39,808 B，配 `-btlfxbe200key`），这份**没有** A2DP 补丁；现在已换成 FixA2DP 版并把参数改成 `-btlfxa2dpcheck`。
+
+- 两个补丁（A2DP 快连门控 / BE200 stored-key）是两条分支，目前**没有合并版**，只能二选一；
+- 如果换成 FixA2DP 后 26 上蓝牙打不开 / 连不上，说明这台机器需要 BE200 stored-key 那条：换回旧 `BlueToolFixup.kext` 并把参数改回 `-btlfxbe200key`（备份在仓库外 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）；
+- `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` 不要跟着换。
+
 > 不要为了切设备反复长按充电盒按钮重置耳机——那会清掉 Mac 和手机上的所有配对。
 
 ---

@@ -197,6 +197,11 @@ sysctl -n kern.bootargs | grep -- -btlfxa2dpcheck      # 必须能看到
 kextstat | grep -i bluetoolfixup                        # 应加载
 ```
 
+**15 和 26 都用这一版**（`BlueToolFixup` 2.7.3 FixA2DP，42,464 B）：15 从 2026-10-29 起就是它，26 从 2026-10-31 起把原来的「BE200 stored-key 实验版」换成了它。
+两份的 `IntelBluetoothFirmware` / `IntelBTPatcher` 保持各自版本（15 是 2.5.0 / 2.5.0，26 是 2.5.1 / `-BE200-25x`），**不要跟着换**。
+
+> 注意：26 原来那份 BE200 实验版带的是 `-btlfxbe200key`，FixA2DP 版不认这个参数，所以 26 的 boot-args 里已经把它换成了 `-btlfxa2dpcheck`。两个补丁是两条分支，**不能同时启用两个 `BlueToolFixup`**。
+
 然后连 AirPods 听歌，特意做几次「暂停 / 继续 / 切走再切回」，确认每次都有声。
 
 > 注意：**不要**为了切设备反复长按 AirPods 盒背重置（会清掉所有配对）。回退：换回原版 `BlueToolFixup` 2.7.3（acidanthera/BrcmPatchRAM）并从 boot-args 删掉 `-btlfxa2dpcheck`。
@@ -281,17 +286,20 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 **macOS 26（`EFI-Tahoe/`）** —— 多出来的 4 个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
 
 ```text
--v keepsyms=1 -vi2c-force-polling -ibtcompatbeta -btlfxbe200key gfxrst=4
+-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
 | 只在 26 上需要的参数 | 为什么 |
 | --- | --- |
 | `gfxrst=4` | 装了 WhateverGreen 就必须加，否则 WEG 的开机画面拷贝会读到已释放内存 → panic |
 | `-ibtcompatbeta` | macOS 26 上用 Intel 蓝牙必须加（Dortania 明确写的） |
-| `-btlfxbe200key` | 配合 26 那套 BE200 蓝牙 kext |
+| `-btlfxa2dpcheck` | 启用 `BlueToolFixup` **FixA2DP** 的 A2DP 快连门控补丁（26 原来用的 BE200 实验版 `-btlfxbe200key` 已替换，两者只能二选一） |
+
+> **2026-10-31 蓝牙改动（26 包）**：`EFI-Tahoe/` 的 `BlueToolFixup` 从「BE200 stored-key 实验版（`-btlfxbe200key`，39,808 B）」换成「**FixA2DP 2.7.3（`-btlfxa2dpcheck`，42,464 B）**」，解决 AirPods 连上没声；
+> 代价是丢掉 BE200 stored-key 那条实验补丁。回滚：把 `BlueToolFixup.kext` 换回旧版并把参数换回 `-btlfxbe200key`（仓库外的备份：`EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）。
 
 | 参数 | 作用 |
 | --- | --- |
