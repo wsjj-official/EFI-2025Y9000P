@@ -247,3 +247,15 @@
 - 三种 EFI 侧修法（拆 `If (PCHA)` / 离线预打补丁 DSDT / 在 `\_SB.PC02.I2C1` 下自建 `TPD1`）全部卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，确认无解。
 - **回退 78WW 后触控板与雷电口 USB 3.2 均恢复**；实测 `UTBMap` 的 `TXHC` 用 3 口或 5 口都能正常识别 USB 3.2，仓库保持原版 3 口。
 - 文档：README 第 6 节改为「BIOS 必须停留在 78WW」对照表 + 警告；`docs/INSTALL.md` Thunderbolt 行；`docs/TROUBLESHOOTING.md` 新增 1.0 节；`docs/EFI-DETAILS.md` DSDT 说明。
+
+---
+
+## 2026-11-01 — Wi-Fi 升到 `_FIX29_20261101`（15 / 26 两份同步）
+
+- 两份 EFI 的 Wi-Fi kext 都换到 **2.4.0 `_FIX29_20261101`**：`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 用 `AirportItlwm-Tahoe-BE200`。
+- **6 GHz SSID**：从 Multiple BSSID 元素的 profile 中解析各 BSS 的名字并逐条发布，BSSID 优先取 RNR 声明的地址；此前 6 GHz 网络始终没有名字。
+- SSID 解析分六种状态记录（正常/隐藏/全零/超长/无元素/截断）；每条 profile 使用自己的 IE、RSN 与能力字段。
+- **6 GHz 关联**在 RSNE 里强制置 MFPC/MFPR（802.11ax 要求）。
+- 扫描：完成通知按批次归属判定；接收计数前移；FCS 与 IE 长度一次性计算；新增 CI 主机测试。
+- 继承 Fix26–Fix28：端口授权、换网一次切换、6 GHz 监管重读、WPA3/PMF 装钥失败上报、Fast Lane、保护性解除关联帧、默认关省电。
+- 同步更新 README（Wi-Fi 段/状态表/更新记录）、`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`、`README-macOS26-Tahoe.md`。

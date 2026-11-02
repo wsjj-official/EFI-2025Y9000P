@@ -16,7 +16,7 @@
 
 **这一版做成了这几件事：**
 
-1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX26_20261031`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
+1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX29_20261101`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
 2. **外放修好** —— Realtek ALC287 + 两颗 Awinic AW88399 智能功放（高音 + 低音同时工作，音量/静音正常）；
 3. **蓝牙 A2DP 修复** —— AirPods 等设备「能连上、放歌没声 / 断一下就没声」已修（`BlueToolFixup` FixA2DP + `-btlfxa2dpcheck`）；
 4. **内屏亮度** —— `nvrmacpibl=1`，由 NullMoth NVKMS 注册背光（需装 NVIDIA 驱动）；
@@ -72,7 +72,7 @@
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX26_20261031`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持** |
+| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX29_20261101`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持** |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -119,24 +119,20 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-10-31 更新，`_FIX26_20261031`）**：两份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX26_20261031`**（`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 用 `AirportItlwm-Tahoe-BE200`，二进制 ABI 不同，不能混用）。这一版主要修「能关联、认证也过，但链路起不来」：
+**本版驱动（2026-11-01 更新，`_FIX29_20261101`）**：两份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX29_20261101`**（`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **6 GHz 的 SSID 解析**：
 
-- **端口授权**：修正 802.1X 端口授权流程——此前 WPA2/WPA3 能关联成功、认证通过，但链路始终不建立、DHCP 拿不到地址；现在四次握手完成后正常连通；
-- **接收**：设备状态校验不再接受全 1 的无效读数（睡眠唤醒瞬间的链路中断不再被误判为"设备就绪"）；直通模式只解析固件实际写入的数据，缓冲区残留不会被当成数据包；
-- **扫描**：关联状态下"离开主信道 / 回到主信道"的时长改为成对下发（此前回主信道是固定值，与实际停留时间对不上）；
-- **Fast Lane**：接受 Cisco/Apple Fast Lane 请求（Cisco 3800 一类 AP 上，此前关联约半秒就被拆链）；
-- **速率**：AP 广播的高带宽信道块不合法时自动降带宽继续连（160→80→40→20），不再调谐失败；
-- 继承之前版本的修复：BA 会话/重排计时器装载、MPDU 按实际载荷设界、密钥槽重置、国家码以固件答复为准、6 GHz 开机后主动通知重读国家码、6 GHz 后台扫描只扫 PSC、连接前结清扫描、密钥安装排队、离开 WPA3/PMF 用保护性解除关联帧、默认关闭省电、WPA3-Personal（SAE，H2E-only）。
-
-> **Wi-Fi 7 说明（重要）**：BE200 是 Wi-Fi 7 硬件，但驱动目前只做到 **802.11a/b/g/n/ac + HE(802.11ax) = Wi-Fi 6/6E**。
-> **macOS 15 上不支持 Wi-Fi 7（EHT/802.11be）**；macOS 26 上 EHT/MLO 仍属公测、尚未实测。
-> 也就是说：15 和 26 都请按 Wi-Fi 6 / 6E 使用，不要期待 11be 的速率。
+- **6 GHz 名称**：同一射频把多个 BSS 合并成一条 beacon 广播时，各 BSS 的名字写在 **Multiple BSSID 元素的 profile** 里；此前不读这段，6 GHz 网络始终"没有名字"。现在按 profile 发布结果、BSSID 优先取 RNR 里路由器声明的地址；
+- **SSID 解析状态**：正常 / 隐藏（长度 0）/ 全零 / 超长 / 无该元素 / 被截断，六种状态分开记录，能区分"路由器隐藏"与"帧本身有问题"；
+- **每条 profile 用该 BSS 自己的元素**（RSN / 能力字段不再沿用发送方的），合成链里去掉只属于集合的 Multiple BSSID 元素；
+- **6 GHz 关联**：RSNE 里强制置 **MFPC/MFPR**（802.11ax 要求），此前 6 GHz 关联请求缺这两位；
+- **扫描**：完成通知按批次归属判定；接收计数移到名字判断之前；FCS/IE 长度一次性算清，不再靠固定偏移；
+- 继承 Fix26–Fix28 的修复（端口授权、换网一次切换、6 GHz 监管、WPA3/PMF 密钥安装失败上报等）。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
-**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX26_20261031` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX29_20261101` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
 
 > **连接建议（2026-10-30 更新）：WPA3-Personal（SAE）已实测可用**，可以直接用 H2E 的 WPA3 热点。
 >
@@ -437,6 +433,14 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
+- **2026-11-01/02 — Wi-Fi 升到 `_FIX29_20261101`（两份 EFI 同步）**：
+  - **6 GHz SSID**：从 Multiple BSSID profile 里解析名字，按 BSSID 逐条发布（此前 6 GHz 网络一直"没名字"）；支持 RNR 声明的 BSSID；
+  - SSID 六种解析状态分开记录；每条 profile 使用自己的 IE/RSN/能力字段；6 GHz 关联强制 MFPC/MFPR；
+  - 扫描完成通知按批次归属、接收计数前移、FCS/IE 长度一次算清；CI 增加主机测试；
+  - 继承 Fix26–Fix28 的端口授权、换网切换、6 GHz 监管、WPA3/PMF 装钥失败上报等修复。
+
+---
+
 ## 13. 文档索引
 
 - [EFI 细节](docs/EFI-DETAILS.md)：ACPI、Kext、config 各段、Quirks、启动参数
@@ -454,7 +458,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - [Acidanthera](https://github.com/acidanthera)：OpenCore、Lilu、VirtualSMC、WhateverGreen、AppleALC、VoodooInput
 - [VoodooI2C](https://github.com/VoodooI2C/VoodooI2C)：I2C 触摸板与设备 nub
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
-- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX26_20261031` 构建来源，尚未合并进上游主仓库）
+- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX29_20261101` 构建来源，尚未合并进上游主仓库）
 - [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
 - NullMoth 2.6.2：NVIDIA 驱动与工具链（本包不含驱动）
 - Linux 侧参考：[16iax10h-linux-sound-saga](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga)、[作者博客](https://www.wsjj.top/archives/176)

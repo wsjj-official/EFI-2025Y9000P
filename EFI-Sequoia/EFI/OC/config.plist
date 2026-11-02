@@ -973,7 +973,7 @@
 				<key>BundlePath</key>
 				<string>AirportItlwm-Sequoia-BE200.kext</string>
 				<key>Comment</key>
-				<string>macOS 15.2+ BE200 Sequoia build 2.4.0_FIX26_20261031 (port authorize fix, RX validation, Fast Lane, 160-&gt;20 fallback); added 8086:272B match</string>
+				<string>macOS 15.2+ BE200 Sequoia build 2.4.0_FIX29_20261101 (6GHz SSID via Multiple-BSSID profile, per-profile IEs, MFPC/MFPR on 6GHz, scan completion match); added 8086:272B match</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
