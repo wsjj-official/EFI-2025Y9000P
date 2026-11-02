@@ -237,3 +237,13 @@
 - 两份 EFI 的 `Misc > Debug` 默认关闭（`Target=0`、`DisplayLevel=0`、`AppleDebug/ApplePanic=false`）；排错时改回 `67 / 2147483650 / true / true`；
 - 新增 `README-macOS26-Tahoe.md`（26 包的改动清单、取舍、装驱动顺序、排错），并同步 README / `docs/EFI-DETAILS.md` / `docs/INSTALL.md` / `docs/TROUBLESHOOTING.md` / `THIRD-PARTY.md`；
 - 清理 `config.plist.before-*` 备份文件，不随仓库发布。
+
+---
+
+## 2026-11-02 — 记录 BIOS 83WW 回归（触控板 + 雷电 USB3.2）
+
+- 实测 BIOS 升到 **83WW** 后：内建 I2C 触控板消失（`ioreg` 无 `TPD0`）、雷电口只剩 USB 2.0、开机刷 `\_SB.UBTC._INI` / `AE_NOT_FOUND` 并拖延数十秒。
+- 根因：83WW 固件把 `Device (PC02)` 包在 `If (PCHA)` 中，macOS 侧 `PCHA` 读 0 → `\_SB.PC02` 整段不加载 → `\_SB.PC02.I2C1.TPD0` 不存在；雷电 SS 通道同样未拉起。
+- 三种 EFI 侧修法（拆 `If (PCHA)` / 离线预打补丁 DSDT / 在 `\_SB.PC02.I2C1` 下自建 `TPD1`）全部卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，确认无解。
+- **回退 78WW 后触控板与雷电口 USB 3.2 均恢复**；实测 `UTBMap` 的 `TXHC` 用 3 口或 5 口都能正常识别 USB 3.2，仓库保持原版 3 口。
+- 文档：README 第 6 节改为「BIOS 必须停留在 78WW」对照表 + 警告；`docs/INSTALL.md` Thunderbolt 行；`docs/TROUBLESHOOTING.md` 新增 1.0 节；`docs/EFI-DETAILS.md` DSDT 说明。

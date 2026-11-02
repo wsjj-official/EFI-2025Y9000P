@@ -98,10 +98,12 @@ ifconfig en0 | grep ether
 | VT-d | Enabled | 本 EFI 删除 DMAR；如遇启动/设备问题可尝试 Disabled |
 | CFG Lock | Disabled（如可改） | 不改也可以，`AppleXcpmCfgLock=true` 会绕过 |
 | Intel SGX | Disabled（如可改） | 避免额外变量 |
-| Thunderbolt / USB4 | 保持默认 | 本版未验证 |
+| Thunderbolt / USB4 | Security Level = No Security 或 SL1 | 雷电口的 **USB 3.2** 依赖它；**BIOS 版本必须停在 78WW**（83WW 会让触控板与雷电 USB 3.2 同时失效，见 README 第 6 节） |
 | Boot Order | UEFI: OpenCore 所在盘优先 | 安装/升级时 |
 
 > 如果 BIOS 没有开放 CFG Lock / VT-d / ReBAR 等选项，保持默认即可；本 EFI 的 Quirks 已覆盖常见情况。
+>
+> **⚠️ 不要升级到 83WW**：实测该版本会让内建 I2C 触控板失效、雷电口只剩 USB 2.0，且开机卡在 `\_SB.UBTC._INI` 的 ACPI 报错；回退 78WW 后恢复正常。
 
 ---
 

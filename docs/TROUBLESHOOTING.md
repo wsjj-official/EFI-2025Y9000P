@@ -6,6 +6,17 @@
 
 ## 1. 启动问题
 
+### 1.0 先确认 BIOS 版本：83WW 有两处致命回归
+
+| 症状 | 78WW | 83WW |
+| --- | --- | --- |
+| 内建触控板完全无反应（`ioreg` 里查不到 `TPD0`） | 正常 | ❌ |
+| 雷电口只认 USB 2.0，不认 U 盘 / SSD | 正常 | ❌ |
+| 开机刷 `ACPI Error ... [\_SB.UBTC._INI] AE_NOT_FOUND`，要等几十秒 | 不出现 | ❌ 常见 |
+
+**处理：把 BIOS 回退到 78WW。** 这三项在 83WW 下都不是 EFI 能修的 —— 拆 `If (PCHA)`、换预打补丁 DSDT、在 `\_SB.PC02.I2C1` 下自建 `TPD1` 设备都试过，全部卡在 `\_SB.UBTC`；回退后两项功能自愈，与 `UTBMap` 是 3 口还是 5 口无关。
+回退后重新确认 Secure Boot / VT-d / Thunderbolt Security，必要时 `Reset NVRAM`。
+
 ### 1.1 卡在 `OC: Prelinked status`
 
 - 确认 `EFI/OC/Drivers/OpenRuntime.efi` 存在且启用；

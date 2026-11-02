@@ -11,6 +11,8 @@
 
 > 两份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
 > **不要两份混拷**：Wi-Fi / 蓝牙 kext 是分系统版本的（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）。
+>
+> **⚠️ BIOS 版本**：本 EFI 只在 **78WW** 上验证；**83WW 已知会让内建触控板与雷电口 USB 3.2 同时失效**，原因与处理见第 6 节。
 
 **这一版做成了这几件事：**
 
@@ -273,7 +275,20 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 | Above 4G Decoding / Resizable BAR | **保持默认** | 配置里 `ResizeAppleGpuBars = -1`、`ResizeGpuBars = -1`（交还固件原值）；固定 8 GB 重设会让固件在进选择界面前挂住 |
 | 显卡模式（MUX / Hybrid / Discrete） | 按需 | 内屏交给独显 = 有画面但开机多 ~98 秒（第 8 节）；混合/集显模式内屏无输出 |
 
-BIOS 版本 **78WW** 为本机实测可用版本；换 BIOS 版本请重新核对 ACPI（原因见第 11 节）。
+### ⚠️ BIOS 版本必须停留在 78WW
+
+| BIOS | 内建 I2C 触控板 | 雷电口 USB 3.2 | 开机 |
+| --- | --- | --- | --- |
+| **78WW（必须）** | ✅ 正常 | ✅ 正常 | 正常 |
+| 83WW（不要升） | ❌ 设备消失（`ioreg` 查不到 `TPD0`） | ❌ 只剩 USB 2.0 | 刷 `ACPI Error ... [\_SB.UBTC._INI] AE_NOT_FOUND`，几十秒才进桌面 |
+
+**原因**：83WW 固件把 `Device (PC02)` 包在 `If (PCHA)` 里，而 macOS 侧 `PCHA` 读 0 → `\_SB.PC02` 整段不加载 → 内建触控板 `\_SB.PC02.I2C1.TPD0` 不存在；同一版固件下雷电控制器的 SuperSpeed 通道也不会拉起，只剩 USB 2.0。
+
+**这不是 EFI 能修的**：拆 `If (PCHA)`、离线预打补丁 DSDT、在 `\_SB.PC02.I2C1` 下自建 `TPD1` 设备，三种做法都会在 `\_SB.UBTC._INI` 处崩（`AE_NOT_FOUND` 连锁）。**回退 78WW 后两项都会自愈**，且与 `UTBMap` 是 3 口还是 5 口无关（实测两种都正常）。
+
+回退后请重新确认 Secure Boot（关）、VT-d（关）、Thunderbolt Security（No Security 或 SL1），必要时 `Reset NVRAM`。
+
+其余 BIOS 设置见上表。
 
 ---
 
@@ -337,7 +352,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - **蓝牙 A2DP**：补丁版 `BlueToolFixup` 依赖 `-btlfxa2dpcheck` 才生效；`IntelBluetoothFirmware` / `IntelBTPatcher` 保持原版，不要一起换版本。
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
-- `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；升级 BIOS 后建议重新提取核对。
+- `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；**BIOS 请停留在 78WW** —— 83WW 会让内建触控板与雷电口 USB 3.2 同时失效（详见第 6 节），升级前先确认能回退。
 - USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit = true` 已打开，实测左侧 USB-A / Type-C / 雷电口均正常。
 
 ---
@@ -410,6 +425,15 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
   - 关联态扫描的离/回主信道时长成对下发；接受 Cisco/Apple **Fast Lane**；高带宽信道块非法时自动 160→80→40→20 降带宽；
   - 继承 BA 计时器、MPDU 边界、国家码以固件为准、6 GHz 主动通知重读、后台扫描只扫 PSC、连接前结清扫描、密钥安装排队、保护性解除关联帧、默认关省电；
   - **Wi-Fi 7（EHT/MLO）仍为公测**，15 依旧不支持 Wi-Fi 7。
+
+---
+
+- **2026-11-02 — BIOS 83WW 回归记录（重要）**：
+  - 实测把 BIOS 升到 **83WW** 后：**内建 I2C 触控板消失**、**雷电口只剩 USB 2.0**，且开机刷 `\_SB.UBTC._INI` / `AE_NOT_FOUND` 一串错误、几十秒才进桌面；
+  - 根因：83WW 固件把 `Device (PC02)` 包在 `If (PCHA)` 里，macOS 侧 `PCHA` 读 0 → `\_SB.PC02` 不加载 → `\_SB.PC02.I2C1.TPD0` 不存在；雷电 SS 通道同样没起来；
+  - 试过三种修法（拆 `If (PCHA)` / 离线预打补丁 DSDT / 在 `\_SB.PC02.I2C1` 下自建 `TPD1`），全部卡在 `\_SB.UBTC._INI`（`AE_NOT_FOUND` 连锁），**确认 EFI 侧无解**；
+  - **回退 78WW 后触控板与雷电 USB 3.2 均恢复**，与 `UTBMap` 版本无关；
+  - 文档同步：README 第 6 节、`docs/INSTALL.md`、`docs/TROUBLESHOOTING.md`（新增 1.0 节）、`docs/EFI-DETAILS.md`。
 
 ---
 

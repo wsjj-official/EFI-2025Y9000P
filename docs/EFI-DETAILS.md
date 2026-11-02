@@ -138,6 +138,7 @@ EFI/
 | PS2K _HID to XHID Rename (with SSDT-PS2K-HID) | `PS2K ... _HID` → `XHID` | 让 VoodooPS2 接管键盘 |
 
 > `DSDT.aml` 是整机补丁表，同型号 83F5 可复用；升级 BIOS 后建议重新提取并比对，不要盲目覆盖。
+> **BIOS 必须停留在 78WW**：83WW 会让内建触控板（`\_SB.PC02.I2C1.TPD0`）与雷电口 USB 3.2 同时失效，且 EFI 侧无解（见 README 第 6 节）。
 
 ---
 
