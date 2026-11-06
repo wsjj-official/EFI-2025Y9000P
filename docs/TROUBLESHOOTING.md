@@ -125,6 +125,29 @@ log show --last 10m --style compact | grep -i 'AW88399:'
 | `ACF/DSP initialization failed` | 固件/ACF 数据问题 | 确认使用的是内置 ACF 的 0.2 构建 |
 | `synchronous ACF/DSP initialization failed` | 命令门/固件加载失败 | 看完整日志，必要时重编驱动 |
 
+### 2.4 升级 NVIDIA 驱动到 2.7.2 后：最大音量爆音 / 外放很小
+
+**症状**：更新 NullMoth（N 卡驱动）到 **2.7.2** 之后——
+
+- 音量推到最大时**爆音/破音**；
+- 外放声音明显变小，`AW88399Driver` 像没工作（功放没被正确驱动）。
+
+**原因**：2.7.2 的安装器会往 `/Library/Extensions` 放一个 **`NMXAudio.kext`**，把原本 `SimpleHDA` 提供的 HDA 路径顶掉；AppleALC 的 layout 13 与 `AW88399Driver` 依赖那条路径，于是出现"能出声但音质差/音量小"。
+
+**处理**（终端执行，然后重启）：
+
+```sh
+sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all
+```
+
+验证：
+
+```sh
+bash tools/check-audio.sh     # 应看到 AW88399Ready = Yes、播放时 AW88399AmplifierRunning = Yes
+```
+
+> 只删音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响，显卡照常工作。
+
 ### 2.5 功放 Ready，但播放不启动
 
 ```sh

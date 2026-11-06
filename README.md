@@ -85,7 +85,7 @@
 | HDMI / DP 音频 | ⚠️ 未验证 | 不属于本版声卡修复范围 |
 | 睡眠 / 唤醒 | ⚠️ 未验证 | 未做长时间睡眠测试 |
 | 内屏亮度调节 | ✅ 已恢复（需 NVIDIA 驱动） | 固件 DSDT 里只有空的 `_BCM` 桩，常规 SSDT-PNLF 不适用；加 **`nvrmacpibl=1`** 后由 NullMoth 的 NVKMS 自己注册内屏背光，滑块与亮度键都可用。**必须装了 NullMoth 驱动才生效**，没装驱动时滑块仍然是灰的 |
-| NVIDIA 独显 | ⚠️ 不在本 EFI | 需单独安装 NullMoth 2.6.2，见第 10 节 |
+| NVIDIA 独显 | ⚠️ 不在本 EFI | 需单独安装 NullMoth（当前 **2.7.2**），注意 2.7.2 会与声卡冲突，见第 10 节 |
 | **macOS 26 Tahoe（`EFI-Tahoe/`）** | ✅ 可进桌面（需 NVIDIA 驱动才有正常帧率） | 实测能进系统；**未装 NullMoth 驱动时约 1–3 FPS**，装驱动后正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) |
 | iServices | ⚠️ 需自行生成三码 | 发布包已清空 SMBIOS |
 
@@ -164,6 +164,22 @@ bash tools/check-audio.sh
 
 期望看到：两个 `SPKR` nub（`i2cAddress = 52 (0x34)` / `53 (0x35)`）、`AW88399Ready = Yes`、`AW88399LastError = 0`、播放时 `AW88399AmplifierRunning = Yes`、`ALC287SharedDACPrimaryPin = 23`、`SecondaryPin = 20`、`LastError = 0`。
 原理与排错见 [docs/AUDIO-AW88399.md](docs/AUDIO-AW88399.md)。
+
+#### ⚠️ 升级 NVIDIA 驱动到 2.7.2 会顶掉声卡（实测）
+
+NullMoth **2.7.2** 的安装包会**替换掉 `SimpleHDA` 那条 HDA 路径**，往 `/Library/Extensions` 里装一个 `NMXAudio.kext`，结果：
+
+- **音量开到最大会爆音**（破音）；
+- **`AW88399Driver` 不生效 → 外放声音明显变小**（功放拿不到正确的 HDA 信号）。
+
+也就是说：2.7.2 装上之后，显卡正常了，但外放退回到"没功放"的状态。修复方法是把那个 kext 删掉、重建内核缓存，重启后回到 `SimpleHDA` / `NMHDA` 的路径：
+
+```sh
+sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all
+```
+
+> 删完建议重启一次，再跑 `bash tools/check-audio.sh` 确认 `AW88399Ready = Yes`、播放时 `AW88399AmplifierRunning = Yes`。
+> 这个操作只影响音频 kext，不会动 NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC`，显卡功能不受影响。
 
 ### 3.3 彻底移除 OCLP 依赖
 
@@ -353,11 +369,14 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
-## 10. NVIDIA（NullMoth 2.6.2）
+## 10. NVIDIA（NullMoth，当前 2.7.2）
 
 本 EFI **不包含** NVIDIA 内核驱动；只保留 NullMoth 相关 boot-args、`NullMothSafe.efi` 两个入口和 dGPU 的 `acpi-wake-type` 属性。
 
 驱动本体 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 装在 `/Library/Extensions`，`NVMTLDriver` 在 `/Library/GPUBundles`，需要用 NullMoth 的安装器在目标系统上单独安装。
+
+> **⚠️ 2.7.2 的已知副作用（声卡）**：2.7.2 安装器会额外往 `/Library/Extensions` 放一个 `NMXAudio.kext`，把 `SimpleHDA` 的 HDA 路径顶掉，表现为**最大音量爆音** + **AW88399 功放不工作、外放声音很小**。
+> 处理：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启后声卡恢复正常；NVIDIA 的四个 kext 不受影响。
 
 `NullMothSafe.efi` 两个入口：
 
@@ -441,6 +460,14 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
+- **2026-11-06 — 记录 NullMoth 2.7.2 与声卡的冲突**：
+  - 升级 NVIDIA 驱动到 **2.7.2** 后，安装器会放入 `NMXAudio.kext` 并顶掉 `SimpleHDA` 的 HDA 路径；
+  - 症状：**最大音量爆音**、**AW88399 功放不生效、外放声音过小**；
+  - 处理：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启即可恢复；不影响 NVIDIA 的 `NVRM`/`NVAccel`/`NVRMFB`/`NVRMAGDC`；
+  - 文档同步：README 第 3.2 / 第 10 节、`docs/TROUBLESHOOTING.md`、`docs/INSTALL.md`、`docs/AUDIO-AW88399.md`。
+
+---
+
 ## 13. 文档索引
 
 - [EFI 细节](docs/EFI-DETAILS.md)：ACPI、Kext、config 各段、Quirks、启动参数
@@ -460,7 +487,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
 - [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX29_20261101` 构建来源，尚未合并进上游主仓库）
 - [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
-- NullMoth 2.6.2：NVIDIA 驱动与工具链（本包不含驱动）
+- NullMoth（当前 2.7.2）：NVIDIA 驱动与工具链（本包不含驱动）
 - Linux 侧参考：[16iax10h-linux-sound-saga](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga)、[作者博客](https://www.wsjj.top/archives/176)
 
 ---

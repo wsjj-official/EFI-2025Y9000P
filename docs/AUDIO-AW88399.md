@@ -292,6 +292,7 @@ afplay /System/Library/Sounds/Glass.aiff
 | 左右低音反了 | 0x34/0x35 通道映射 | 本版固定 `0x34→ch1`、`0x35→ch0`；如换板需改 `AW88399Driver.cpp` |
 | 升级系统后失效 | AppleHDA/AppleALC ABI 变化 | 用对应 SDK 重编 AppleALC/AW88399Driver；保留原 EFI 回退 |
 | 睡眠后无声 | 功放未重新上电 | 本版未验证睡眠；可先禁用睡眠或反馈日志 |
+| 最大音量爆音 / 外放很小（升级 N 卡驱动后） | NullMoth 2.7.2 放入的 `NMXAudio.kext` 顶掉了 `SimpleHDA` 的 HDA 路径 | `sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启 |
 
 ---
 

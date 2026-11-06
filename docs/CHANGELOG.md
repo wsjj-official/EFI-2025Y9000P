@@ -259,3 +259,13 @@
 - 扫描：完成通知按批次归属判定；接收计数前移；FCS 与 IE 长度一次性计算；新增 CI 主机测试。
 - 继承 Fix26–Fix28：端口授权、换网一次切换、6 GHz 监管重读、WPA3/PMF 装钥失败上报、Fast Lane、保护性解除关联帧、默认关省电。
 - 同步更新 README（Wi-Fi 段/状态表/更新记录）、`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`、`README-macOS26-Tahoe.md`。
+
+---
+
+## 2026-11-06 — 记录 NullMoth 2.7.2 与声卡的冲突
+
+- 升级 NVIDIA 驱动到 **2.7.2** 后，安装器会往 `/Library/Extensions` 放入 **`NMXAudio.kext`**，顶掉 `SimpleHDA` 提供的 HDA 路径。
+- 症状：**音量开到最大爆音**；**`AW88399Driver` 不生效、外放声音明显变小**。
+- 处理（终端执行后重启）：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`。
+- 该操作只影响音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响。
+- 同步更新 README（第 3.2 声卡 + 第 10 NVIDIA + 更新记录）、`docs/TROUBLESHOOTING.md`（新增 2.4）、`docs/INSTALL.md`、`docs/AUDIO-AW88399.md`。

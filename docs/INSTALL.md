@@ -233,13 +233,21 @@ NVIDIA (0x10de) Device ID: 0x2f58
 Kernel Extension Info: No Kext Loaded
 ```
 
-需要按 NullMoth 2.6.2 的说明单独安装。OpenCore 里已保留：
+需要按 NullMoth（当前 2.7.2）的说明单独安装。OpenCore 里已保留：
 
 - `NullMothSafe.efi` 的 `Remove NVIDIA driver` / `Start once without NVIDIA driver`
 - `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth`
 - `amfi_get_out_of_my_way=0x1 amfi=0x80`
 
 安装/升级 NVIDIA 驱动前，先用 `NullMothSafe` 的“本次不加载”入口确认能进系统。
+
+> **⚠️ 升级到 NullMoth 2.7.2 之后要清一次音频 kext**：2.7.2 会安装 `NMXAudio.kext` 并顶掉 `SimpleHDA`，导致最大音量爆音、AW88399 功放失效（外放很小）。装完驱动后执行：
+>
+> ```sh
+> sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all
+> ```
+>
+> 然后重启。NVIDIA 的四个 kext 不受影响。
 
 ### 7.3 更新 macOS
 
