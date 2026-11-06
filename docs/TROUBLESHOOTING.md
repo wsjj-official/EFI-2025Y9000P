@@ -148,6 +148,8 @@ bash tools/check-audio.sh     # 应看到 AW88399Ready = Yes、播放时 AW88399
 
 > 只删音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响，显卡照常工作。
 
+> **本仓库的 `EFI-Tahoe/` 从 2026-11-06 起已默认带上 `-nmhdaoff`**，正常情况不需要再手动删 kext。
+
 **更省事的替代做法（EFI 侧）**：`NMXAudio` / `NMHDA` 是 Lilu 插件（`com.nullmoth.NMHDA`），源码里带 `bootargOff = "-nmhdaoff"`：
 
 - 在 `boot-args` 末尾加 **`-nmhdaoff`** → 插件不启用，`SimpleHDA` 路径恢复，无需删 kext；

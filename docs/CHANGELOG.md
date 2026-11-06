@@ -270,3 +270,13 @@
 - 该操作只影响音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响。
 - 同步更新 README（第 3.2 声卡 + 第 10 NVIDIA + 更新记录）、`docs/TROUBLESHOOTING.md`（新增 2.4）、`docs/INSTALL.md`、`docs/AUDIO-AW88399.md`。
 - 补充：不删 kext 的替代做法——`NMXAudio`/`NMHDA` 是 Lilu 插件（`com.nullmoth.NMHDA`），源码定义 `bootargOff = "-nmhdaoff"`，在 `boot-args` 加该参数或在 `Kernel>Block` 里屏蔽即可（代价：NVIDIA HDMI/DP 音频同时关闭）。来源：<https://github.com/nullmoth/nvidia-macos-driver>（`kexts/NMHDA/nmhda.cpp`）。
+
+---
+
+## 2026-11-06 — `EFI-Tahoe` 默认加 `-nmhdaoff`，保留 SimpleHDA / AW88399 外放
+
+- NullMoth 2.7.2 在 macOS 26 上会安装 `NMXAudio.kext`（FreeBSD `snd_hda` 的 XNU 移植），顶掉 `SimpleHDA` 的 HDA 路径，导致最大音量爆音、`AW88399Driver` 不生效（外放很小）。
+- `EFI-Tahoe/` 的 `boot-args` 末尾追加 **`-nmhdaoff`**（`NMHDA`/`NMXAudio` 是 Lilu 插件，上游源码 `bootargOff = "-nmhdaoff"`）；`NMHDA.kext` 仍保留、只是运行时不启用，删掉参数即可恢复。
+- 影响：**ALC287 + 双 AW88399（layout 13 共享 DAC）外放/耳机正常**；**NVIDIA HDMI/DP 音频不可用**；显卡、亮度、Wi-Fi、蓝牙不受影响。
+- `EFI-Sequoia/` 不加该参数（macOS 15 自带 AppleHDA，加了只会丢 HDMI 音频）。
+- 同步：README 第 3.2 / 第 7 / 更新记录、`README-macOS26-Tahoe.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`。

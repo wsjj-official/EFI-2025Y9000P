@@ -319,7 +319,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverb
 -v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck -nmhdaoff
 ```
 
 | 只在 26 上需要的参数 | 为什么 |
@@ -327,6 +327,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 | `gfxrst=4` | 装了 WhateverGreen 就必须加，否则 WEG 的开机画面拷贝会读到已释放内存 → panic |
 | `-ibtcompatbeta` | macOS 26 上用 Intel 蓝牙必须加（Dortania 明确写的） |
 | `-btlfxa2dpcheck` | 启用 `BlueToolFixup` **FixA2DP** 的 A2DP 快连门控补丁（26 原来用的 BE200 实验版 `-btlfxbe200key` 已替换，两者只能二选一） |
+| `-nmhdaoff` | 关掉 NullMoth 的音频插件（`NMHDA`/`NMXAudio`，bundle `com.nullmoth.NMHDA`），让 `SimpleHDA` 独占 HDA 路径 → **ALC287 + AW88399 外放正常**；代价是 **NVIDIA HDMI/DP 音频不可用**（本机未验证过该功能） |
 
 > **2026-10-31 蓝牙改动（26 包）**：`EFI-Tahoe/` 的 `BlueToolFixup` 从「BE200 stored-key 实验版（`-btlfxbe200key`，39,808 B）」换成「**FixA2DP 2.7.3（`-btlfxa2dpcheck`，42,464 B）**」，解决 AirPods 连上没声；
 > 代价是丢掉 BE200 stored-key 那条实验补丁。回滚：把 `BlueToolFixup.kext` 换回旧版并把参数换回 `-btlfxbe200key`（仓库外的备份：`EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）。
@@ -378,6 +379,8 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 > **⚠️ 2.7.2 的已知副作用（声卡）**：2.7.2 安装器会额外往 `/Library/Extensions` 放一个 `NMXAudio.kext`，把 `SimpleHDA` 的 HDA 路径顶掉，表现为**最大音量爆音** + **AW88399 功放不工作、外放声音很小**。
 > 处理：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启后声卡恢复正常；NVIDIA 的四个 kext 不受影响。
 > 也可以在 `boot-args` 加 **`-nmhdaoff`**（NMHDA 是 Lilu 插件，上游源码里就是这个名字的关闭参数），不用删 kext；代价是 NVIDIA 的 HDMI/DP 音频一并关闭。
+>
+> **本仓库的 `EFI-Tahoe/` 已经默认带上 `-nmhdaoff`**（2026-11-06 起），所以你装完 2.7.2 不用再手动删 `NMXAudio.kext`；想恢复 HDMI 音频时把该参数删掉即可，但要注意 26 上它会和 `SimpleHDA` 抢 HDA 控制器。
 
 `NullMothSafe.efi` 两个入口：
 
@@ -466,6 +469,14 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
   - 症状：**最大音量爆音**、**AW88399 功放不生效、外放声音过小**；
   - 处理：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启即可恢复；不影响 NVIDIA 的 `NVRM`/`NVAccel`/`NVRMFB`/`NVRMAGDC`；
   - 文档同步：README 第 3.2 / 第 10 节、`docs/TROUBLESHOOTING.md`、`docs/INSTALL.md`、`docs/AUDIO-AW88399.md`。
+
+---
+
+- **2026-11-06 — `EFI-Tahoe` 默认加 `-nmhdaoff`（保 SimpleHDA/外放）**：
+  - NullMoth 2.7.2 会在 macOS 26 上安装 `NMXAudio.kext`（FreeBSD `snd_hda` 移植），顶掉 `SimpleHDA` 的 HDA 路径 → 爆音 + AW88399 不生效；
+  - 两份 EFI 中只在 **`EFI-Tahoe/`** 的 `boot-args` 末尾加 `-nmhdaoff`（`NMHDA`/`NMXAudio` 是 Lilu 插件，源码 `bootargOff = "-nmhdaoff"`），`NMHDA.kext` 仍保留、只是运行时不启用；
+  - 影响：**外放/耳机（ALC287 + 双 AW88399，layout 13 共享 DAC）正常**；**NVIDIA HDMI/DP 音频不可用**；其余（显卡、亮度、Wi-Fi、蓝牙）不受影响；
+  - `EFI-Sequoia/` 不加（15 自带 AppleHDA，加了只会丢 HDMI 音频、没有收益）。
 
 ---
 
