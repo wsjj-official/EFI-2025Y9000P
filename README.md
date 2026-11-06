@@ -377,6 +377,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 > **⚠️ 2.7.2 的已知副作用（声卡）**：2.7.2 安装器会额外往 `/Library/Extensions` 放一个 `NMXAudio.kext`，把 `SimpleHDA` 的 HDA 路径顶掉，表现为**最大音量爆音** + **AW88399 功放不工作、外放声音很小**。
 > 处理：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启后声卡恢复正常；NVIDIA 的四个 kext 不受影响。
+> 也可以在 `boot-args` 加 **`-nmhdaoff`**（NMHDA 是 Lilu 插件，上游源码里就是这个名字的关闭参数），不用删 kext；代价是 NVIDIA 的 HDMI/DP 音频一并关闭。
 
 `NullMothSafe.efi` 两个入口：
 

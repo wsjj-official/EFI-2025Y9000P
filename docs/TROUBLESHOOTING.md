@@ -148,6 +148,14 @@ bash tools/check-audio.sh     # 应看到 AW88399Ready = Yes、播放时 AW88399
 
 > 只删音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响，显卡照常工作。
 
+**更省事的替代做法（EFI 侧）**：`NMXAudio` / `NMHDA` 是 Lilu 插件（`com.nullmoth.NMHDA`），源码里带 `bootargOff = "-nmhdaoff"`：
+
+- 在 `boot-args` 末尾加 **`-nmhdaoff`** → 插件不启用，`SimpleHDA` 路径恢复，无需删 kext；
+- 或在 `Kernel>Block` 里加一条 `Identifier = com.nullmoth.NMHDA`；
+- 调试点：`-nmhdadbg`（详细日志，`sysctl debug.nmhda` 可看结果）。
+
+代价：NVIDIA 的 HDMI/DisplayPort 音频也会一并不可用（本机内屏不走 HDMI 音频，未验证过该功能）。
+
 ### 2.5 功放 Ready，但播放不启动
 
 ```sh
