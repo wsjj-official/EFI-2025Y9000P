@@ -148,15 +148,15 @@ bash tools/check-audio.sh     # 应看到 AW88399Ready = Yes、播放时 AW88399
 
 > 只删音频 kext，NVIDIA 的 `NVRM` / `NVAccel` / `NVRMFB` / `NVRMAGDC` 不受影响，显卡照常工作。
 
-> **本仓库的 `EFI-Tahoe/` 从 2026-11-06 起已默认带上 `-nmhdaoff`**，正常情况不需要再手动删 kext。
+**关于 `-nmhdaoff`：它对这个问题没用（实测）**。`-nmhdaoff` 关的是 `NMHDA`（Lilu 插件，给 AppleHDA 补 NVIDIA HDA 设备 ID）；26 上的 `NMXAudio.kext` 是 FreeBSD `snd_hda` 的 XNU 移植，**不是 Lilu 插件、不解析 Lilu 参数**。加参数重启后声音仍不正常，必须删 kext。
 
-**更省事的替代做法（EFI 侧）**：`NMXAudio` / `NMHDA` 是 Lilu 插件（`com.nullmoth.NMHDA`），源码里带 `bootargOff = "-nmhdaoff"`：
+**EFI 侧唯一可能有效的做法**：`Kernel>Block` 按 bundle id 屏蔽。先查 id：
 
-- 在 `boot-args` 末尾加 **`-nmhdaoff`** → 插件不启用，`SimpleHDA` 路径恢复，无需删 kext；
-- 或在 `Kernel>Block` 里加一条 `Identifier = com.nullmoth.NMHDA`；
-- 调试点：`-nmhdadbg`（详细日志，`sysctl debug.nmhda` 可看结果）。
+```sh
+plutil -p /Library/Extensions/NMXAudio.kext/Contents/Info.plist | grep CFBundleIdentifier
+```
 
-代价：NVIDIA 的 HDMI/DisplayPort 音频也会一并不可用（本机内屏不走 HDMI 音频，未验证过该功能）。
+然后把该 id 加进 `Kernel>Block`（`Enabled = true`，`MinKernel 25.0.0` / `MaxKernel 25.99.99`）。这条是否对 `/Library/Extensions` 里的 kext 生效取决于它是否被编进启动 KC，需要实测；**删 kext 仍然是最可靠的办法**。
 
 ### 2.5 功放 Ready，但播放不启动
 

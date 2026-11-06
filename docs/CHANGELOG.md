@@ -276,7 +276,17 @@
 ## 2026-11-06 — `EFI-Tahoe` 默认加 `-nmhdaoff`，保留 SimpleHDA / AW88399 外放
 
 - NullMoth 2.7.2 在 macOS 26 上会安装 `NMXAudio.kext`（FreeBSD `snd_hda` 的 XNU 移植），顶掉 `SimpleHDA` 的 HDA 路径，导致最大音量爆音、`AW88399Driver` 不生效（外放很小）。
-- `EFI-Tahoe/` 的 `boot-args` 末尾追加 **`-nmhdaoff`**（`NMHDA`/`NMXAudio` 是 Lilu 插件，上游源码 `bootargOff = "-nmhdaoff"`）；`NMHDA.kext` 仍保留、只是运行时不启用，删掉参数即可恢复。
+- ~~`EFI-Tahoe/` 的 `boot-args` 末尾追加 `-nmhdaoff`~~ **（已撤销，见 2026-11-06 更正）**：该参数只关 `NMHDA`，对 `NMXAudio.kext` 无效。
 - 影响：**ALC287 + 双 AW88399（layout 13 共享 DAC）外放/耳机正常**；**NVIDIA HDMI/DP 音频不可用**；显卡、亮度、Wi-Fi、蓝牙不受影响。
 - `EFI-Sequoia/` 不加该参数（macOS 15 自带 AppleHDA，加了只会丢 HDMI 音频）。
 - 同步：README 第 3.2 / 第 7 / 更新记录、`README-macOS26-Tahoe.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`。
+
+---
+
+## 2026-11-06（更正） — `-nmhdaoff` 对 `NMXAudio.kext` 无效，已从 EFI 移除
+
+- 实测：`EFI-Tahoe` 加了 `-nmhdaoff` 后重启，声音依旧不正常；只有执行 `sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all` 并重启才恢复。
+- 原因：`-nmhdaoff` 是 `NMHDA`（Lilu 插件，补 NVIDIA HDA 设备 ID）的开关；`NMXAudio.kext` 是 FreeBSD `snd_hda` 在 XNU 上的移植，不是 Lilu 插件，不解析 Lilu 启动参数。
+- 已把 `-nmhdaoff` 从 `EFI-Tahoe/` 的 `boot-args` 移除；`NMHDA.kext` 保持启用（NVIDIA HDMI/DP 音频可用）。
+- 26 上恢复外放的可靠做法：删除 `NMXAudio.kext` 并重建内核缓存；EFI 侧若要尝试，只能用 `Kernel>Block` 按其 bundle id 屏蔽（需实测）。
+- 文档同步：README 第 3.2/第 7/更新记录、`README-macOS26-Tahoe.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`。
