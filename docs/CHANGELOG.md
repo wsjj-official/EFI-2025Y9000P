@@ -296,6 +296,7 @@
 ## 2026-11-09 — 拆出 83WW 专用 EFI（`EFI-Tahoe-83WW/`）
 
 - 实测确认 **BIOS 版本决定 `PC02` 子树内容**：78WW 的 `If (PCHA)` 块里还包着 `UBTC`/`UCM`/`UCH`/`UBST`/`DGPB`/`DGPS`，拆开后 `_INI` 找不到 `UBSC`（Region）等依赖 → `AE_NOT_FOUND` 连锁 → **开不了机**（78WW + 83WW 配方，2026-11-09 实测）。
+- **方案来源**：BIOS 83WW 的修复方案（两条 PC02 补丁、`APIC-CPU24` 替换、`TXHC` 5 口映射）由 [**Ersiter**](https://github.com/Ersiter) 提供，本仓库在其基础上整理（去掉核显部分、保留蓝牙 A2DP 等）。
 - 新增目录 `EFI-Tahoe-83WW/EFI`（macOS 26 + 83WW）：**无 `DSDT.aml`**、`ACPI>Delete` 856 字节 APIC、加 `APIC-CPU24.aml`、两条 PC02 补丁（`a04e2f92…` / `a08e7716…`）、`TXHC` 5 口、boot-args 追加 `TSC_sync_margin=0`。
 - 该变体以一份**已在 83WW 实测可用**的同机型 EFI 为参考，但**去掉了核显部分**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff` 等），保留本仓库的蓝牙 A2DP、`Kernel>Block`、`NullMothSafe` 工具、`MacBookPro16,2`。
 - **2026-11-09 在 83WW 上实测通过**：正常进桌面，内建触控板与雷电口 USB 3.2 均正常（验证用的 EFI 与仓库 `EFI-Tahoe-83WW/EFI` 逐字节一致，仅 `config.plist` 多一条 DSDT 禁用的占位条目）。

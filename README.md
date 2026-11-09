@@ -513,6 +513,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - [Acidanthera](https://github.com/acidanthera)：OpenCore、Lilu、VirtualSMC、WhateverGreen、AppleALC、VoodooInput
 - [VoodooI2C](https://github.com/VoodooI2C/VoodooI2C)：I2C 触摸板与设备 nub
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
+- [**Ersiter**](https://github.com/Ersiter)：**BIOS 83WW 的修复方案**（`APIC-CPU24` 替换、`If (PCHA)` 的两层拆除即两条 PC02 补丁、`TXHC` 5 口 USB 映射）由他提供；本仓库的 `EFI-Tahoe-83WW/` 在其基础上整理（去掉核显部分、保留蓝牙 A2DP 等）
 - [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX29_20261101` 构建来源，尚未合并进上游主仓库）
 - [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
 - NullMoth（当前 2.7.2）：NVIDIA 驱动与工具链（本包不含驱动）

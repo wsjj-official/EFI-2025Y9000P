@@ -59,8 +59,8 @@ ACPI Error: [TDC1] Namespace lookup failure
 
 ## 4. 83WW 变体的来源与验证状态
 
-- 来源：一份**同机型、已在 83WW 上实测可用**的 EFI（触控板与雷电口 USB 3.2 均正常），其关键改动就是本页 §2 的两条 PC02 补丁 + `APIC-CPU24`；
-- 本仓库的处理：以 `EFI-Tahoe/` 为底，套用上述 ACPI 改动与 5 口 USB 映射，**去掉核显部分**，保留我们的蓝牙 A2DP 修复、`Kernel>Block`（`IONDRVSupport` / `AppleEthernetRL`）、`NullMothSafe` 工具、`MacBookPro16,2`；
+- 来源：**Ersiter（<https://github.com/Ersiter>）提供的 83WW 修复方案** —— 关键改动就是本页 §2 的两条 PC02 补丁、`APIC-CPU24` 替换（并先删掉 856 字节的固件 APIC）与 `TXHC` 5 口 USB 映射；该方案已在同机型的 83WW 上实测可用（触控板与雷电口 USB 3.2 均正常）；
+- 本仓库的处理：以 `EFI-Tahoe/` 为底，套用 Ersiter 的上述 ACPI 改动与 5 口 USB 映射，**去掉核显部分**，保留我们的蓝牙 A2DP 修复、`Kernel>Block`（`IONDRVSupport` / `AppleEthernetRL`）、`NullMothSafe` 工具、`MacBookPro16,2`；
 - **状态：2026-11-09 已在 83WW 上实机验证通过** —— 可正常进桌面，内建触控板与雷电口 USB 3.2 均正常（测试机即本仓库目标机型，BIOS 83WW）。
 
 > 验证时的 EFI 与仓库 `EFI-Tahoe-83WW/EFI` **逐字节一致**（204 个共有文件全同，仅 `config.plist` 里多一条"DSDT 禁用"的占位条目，行为等效）。
@@ -93,3 +93,9 @@ ACPI Error: [TDC1] Namespace lookup failure
 | 2026-11-09 | **83WW + 83WW 配方**（本仓库 `EFI-Tahoe-83WW/`） | **通过**：进桌面、触控板可用、雷电口 USB 3.2 正常 |
 
 结论：**`PC02` 能不能打开，由 BIOS 版本决定子树内容；不是补丁写法问题。** 78WW 走 DSDT，83WW 走补丁，两套并存。
+
+---
+
+## 7. 致谢
+
+- **Ersiter**（<https://github.com/Ersiter>）：提供 **BIOS 83WW 的修复方案**（`APIC-CPU24` 替换、两条 PC02 补丁、`TXHC` 5 口 USB 映射）。本仓库 `EFI-Tahoe-83WW/` 即在其基础上整理；同时也感谢其 ALC287 共享 DAC 分支、`AW88399Driver` 与 BE200 Wi-Fi 驱动（见 [THIRD-PARTY.md](../THIRD-PARTY.md)）。

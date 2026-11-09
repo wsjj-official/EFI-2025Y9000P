@@ -60,3 +60,5 @@
 ## 商标
 
 Lenovo、Legion、Realtek、Awinic、Intel、NVIDIA、Apple、macOS 等名称和商标归各自所有者。本包与上述公司无隶属关系。
+
+> **BIOS 83WW 修复方案的致谢**：`EFI-Tahoe-83WW/` 中的 `APIC-CPU24.aml`、两条 PC02 ACPI 补丁与 `TXHC` 5 口 USB 映射来自 [**Ersiter**](https://github.com/Ersiter) 提供的方案（已获作者同意用于本仓库的适配说明）。
