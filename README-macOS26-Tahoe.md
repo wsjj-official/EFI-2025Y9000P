@@ -93,7 +93,7 @@ VoodooI2C 2.9.1、USBToolBox + 你的 UTBMap、YogaSMC、NVMeFix…）。
 ## 4. 最终 `boot-args`
 
 ```text
--v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
+keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck

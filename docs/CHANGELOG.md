@@ -302,3 +302,12 @@
 - **2026-11-09 在 83WW 上实测通过**：正常进桌面，内建触控板与雷电口 USB 3.2 均正常（验证用的 EFI 与仓库 `EFI-Tahoe-83WW/EFI` 逐字节一致，仅 `config.plist` 多一条 DSDT 禁用的占位条目）。
 - `EFI-Tahoe/`（78WW）与 `EFI-Sequoia/`（78WW）保持不变。
 - 新增 `docs/BIOS-VERSIONS.md`（对照、原理、历史尝试、切换与回滚）；同步 README（顶部/§4/§5/§6/更新记录/文档索引）、`docs/INSTALL.md`、`docs/EFI-DETAILS.md`（7.1 节）、`docs/TROUBLESHOOTING.md`（1.0 节）、`README-macOS26-Tahoe.md`。
+
+---
+
+## 2026-11-09 — 三份 EFI 默认去掉 `-v`（静默启动）
+
+- 实测：同一份 83WW EFI 只去掉 `-v`、其余不变，**开机明显变快** —— verbose 阶段要把每条日志逐行画到屏幕上，本身非常耗时。
+- `EFI-Sequoia/`、`EFI-Tahoe/`、`EFI-Tahoe-83WW/` 三份的 `boot-args` 均移除 `-v`；其余参数（`keepsyms=1`、`-vi2c-force-polling`、`-ibtcompatbeta`、`gfxrst=4`、`nvfb*`、`alcid/alcverbs`、`nvrmacpibl`、`itlwm_he`、`-btlfxa2dpcheck`、`TSC_sync_margin=0`）不变。
+- 排错需要看最后一行时，临时把 `-v` 加回即可。
+- 文档同步：README §7（说明 + 参数表）、更新记录、`docs/EFI-DETAILS.md` §6、`docs/TROUBLESHOOTING.md` §1.2。

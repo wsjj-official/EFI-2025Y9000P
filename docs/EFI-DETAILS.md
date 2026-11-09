@@ -498,7 +498,7 @@ EFI/
 **`EFI-Sequoia/`（macOS 15）**
 
 ```text
--v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
+keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
@@ -506,7 +506,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 **`EFI-Tahoe/`（macOS 26）**
 
 ```text
--v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
+keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
@@ -514,7 +514,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 | 参数 | 作用 | 能否去掉 |
 | --- | --- | --- |
-| `-v` | verbose 启动 | 可以，稳定后去掉 |
+| `-v` | verbose 启动 | **默认已去掉**（2026-11-09，去掉后开机明显变快）；排错时临时加回 |
 | `keepsyms=1` | panic 保留符号 | 建议保留 |
 | `-vi2c-force-polling` | VoodooI2C 强制轮询 | 触摸板/SPKR 正常后可试去掉，不建议 |
 | `nvfb=1` | NullMoth NVIDIA framebuffer | 不装 NVIDIA 驱动时无影响 |

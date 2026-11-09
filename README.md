@@ -312,17 +312,19 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 
 ## 7. 启动参数
 
+> **2026-11-09 起默认「静默启动」：三份 EFI 的 `boot-args` 都去掉了 `-v`。** 实测去掉后开机明显变快（verbose 阶段要逐行往屏幕上画字，非常吃时间）。日常使用不需要 `-v`；**排错时再临时加回**（加一个 `-v` 即可，`keepsyms=1` 建议保留）。
+
 **macOS 15（`EFI-Sequoia/`）**
 
 ```text
--v keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
+keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
 **macOS 26（`EFI-Tahoe/`）** —— 多出来的 4 个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
 
 ```text
--v keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
+keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
@@ -340,7 +342,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 | 参数 | 作用 |
 | --- | --- |
-| `-v` | 详细日志；稳定后可以去掉 |
+| `-v` | 详细日志（**默认已去掉**，2026-11-09：去掉后开机明显变快）；排错时临时加回 |
 | `keepsyms=1` | panic 时保留符号 |
 | `-vi2c-force-polling` | VoodooI2C 强制轮询，触摸板 / SPKR 枚举更稳 |
 | `nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth` | NullMoth NVIDIA 帧缓冲/加速相关；未装驱动时无影响 |
@@ -492,6 +494,13 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
   - 新目录 `EFI-Tahoe-83WW/EFI`：在上述基础上**去掉核显相关**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff`），保留蓝牙 A2DP、`Kernel>Block`、`NullMothSafe` 工具、`MacBookPro16,2`；boot-args 追加 `TSC_sync_margin=0`；
   - **2026-11-09 在 83WW 上实测通过**：进桌面、内建触控板、雷电口 USB 3.2 均正常；
   - 文档：README 顶部/§4/§5/§6、新增 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)、`docs/INSTALL.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`、`docs/CHANGELOG.md`。
+
+---
+
+- **2026-11-09 — 三份 EFI 默认去掉 `-v`（静默启动，开机变快）**：
+  - 实测同一份 83WW EFI，只去掉 `-v` 其它不变，**开机速度明显提升**（verbose 阶段逐行渲染文字本身很耗时）；
+  - `EFI-Sequoia/`、`EFI-Tahoe/`、`EFI-Tahoe-83WW/` 三份的 `boot-args` 全部移除 `-v`，其余参数不动（`keepsyms=1` 保留）；
+  - 排错时再加回 `-v` 即可；文档里的启动参数块同步更新。
 
 ---
 
