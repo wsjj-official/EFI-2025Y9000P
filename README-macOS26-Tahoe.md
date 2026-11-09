@@ -3,7 +3,7 @@
 适用机器：Lenovo Legion Y9000P IAX10H / 83F5 / Core Ultra 9 275HX / RTX 5070 Ti Laptop
 对应仓库目录：**`EFI-Tahoe/EFI/`**（macOS 26 用）；对照的是同仓库的 `EFI-Sequoia/`（macOS 15，长期验证）
 
-> **⚠️ BIOS 83WW 请改用 [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI)**：本文件描述的是 **78WW** 版（靠 `DSDT.aml`）。83WW 上需要另一套 ACPI 写法（无 DSDT + APIC 替换 + 两条 PC02 补丁）；两套不能互换，见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
+> **⚠️ BIOS 83WW 请改用 [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI)**：本文件描述的是 **78WW** 版（靠 `DSDT.aml`）。83WW 上需要另一套 ACPI 写法（无 DSDT + APIC 替换 + 两条 PC02 补丁），**该版本已于 2026-11-09 在 83WW 上实测通过**；两套不能互换，见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 参考包：外部拿到的 `Tahoe-EFI-share`（别人做的 macOS 26 适配起点，作者自己标注 "not ready to boot"）
 
 ---

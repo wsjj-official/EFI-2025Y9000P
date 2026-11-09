@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 78WW | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
 | [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | **78WW** | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
-| [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI) | **macOS 26 Tahoe**（26.4+） | **83WW** | 2026-11-09 新增：无 `DSDT.aml` + APIC 替换 + 两条 PC02 补丁 + `TXHC` 5 口；**尚未实机验证** |
+| [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI) | **macOS 26 Tahoe**（26.4+） | **83WW** | 2026-11-09 新增：无 `DSDT.aml` + APIC 替换 + 两条 PC02 补丁 + `TXHC` 5 口；**已于 2026-11-09 在 83WW 上实测通过**（进桌面、触控板、雷电 USB 3.2 正常） |
 
 > 三份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`、`EFI-Tahoe-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
 > **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
@@ -298,13 +298,13 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 | BIOS | 用哪个 EFI | 触控板 | 雷电口 USB 3.2 | 说明 |
 | --- | --- | --- | --- | --- |
 | **78WW** | `EFI-Tahoe/EFI` | ✅ | ✅ | 靠 `DSDT.aml`（78WW 预打补丁，拆掉 `If (PCHA)`） |
-| **83WW** | `EFI-Tahoe-83WW/EFI` | ✅（预期） | ✅（预期） | 不加载 DSDT；改用 `APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
+| **83WW** | `EFI-Tahoe-83WW/EFI` | ✅ 已实测 | ✅ 已实测 | 不加载 DSDT；改用 `APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
 
 **两者不能混用**：
 - `EFI-Tahoe/`（78WW）放到 83WW 上 → 触控板消失、雷电口只剩 USB 2.0；
 - `EFI-Tahoe-83WW/` 放到 78WW 上 → **开不了机**：78WW 的 `If (PCHA)` 块里还包着 `UBTC` / `UCM` / `UCH` / `UBST` / `DGPB` / `DGPS` 这些设备，拆开后它们的 `_INI` 找不到 `UBSC`（Region）等依赖，刷一串 `AE_NOT_FOUND`（2026-11-09 实测）。
 
-> `EFI-Tahoe-83WW/` 是基于一份**已在 83WW 上实测可用**的同机型 EFI 整理的，但**去掉了它的核显驱动部分**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff` 等）并保留本仓库的蓝牙 A2DP 修复，**尚未在 83WW 上实机验证**；首次使用建议保留 `-v` 观察日志。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
+> `EFI-Tahoe-83WW/` 是基于一份**已在 83WW 上实测可用**的同机型 EFI 整理的：去掉了它的核显驱动部分（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff` 等），保留本仓库的蓝牙 A2DP 修复。**2026-11-09 已在 83WW 上实机验证通过**（进桌面、触控板、雷电口 USB 3.2 正常）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 其余 BIOS 设置见上表。
 
@@ -490,7 +490,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
   - 78WW 的 `If (PCHA)` 块里包着 `UBTC`/`UCM`/`UCH`/`UBST`/`DGPB`/`DGPS`，拆开后 `_INI` 找不到 `UBSC` 等依赖 → `AE_NOT_FOUND` 连锁；**同一套补丁在 78WW 上实测开不了机**；
   - 83WW 上可用的写法：**不加载 DSDT**，`ACPI>Delete` 掉 856 字节 APIC 后加 `APIC-CPU24.aml`，并打两条 PC02 补丁（`a04e2f92…` 与 `a08e7716…`），`UTBMap` 的 `TXHC` 补 5 口；
   - 新目录 `EFI-Tahoe-83WW/EFI`：在上述基础上**去掉核显相关**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff`），保留蓝牙 A2DP、`Kernel>Block`、`NullMothSafe` 工具、`MacBookPro16,2`；boot-args 追加 `TSC_sync_margin=0`；
-  - **未实机验证**，首次在 83WW 上启动请保留 `-v`；开机卡住先把 `APIC-CPU24.aml` 条目停用再试；
+  - **2026-11-09 在 83WW 上实测通过**：进桌面、内建触控板、雷电口 USB 3.2 均正常；
   - 文档：README 顶部/§4/§5/§6、新增 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)、`docs/INSTALL.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`、`docs/CHANGELOG.md`。
 
 ---

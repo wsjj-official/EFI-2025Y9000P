@@ -9,7 +9,7 @@
 | BIOS 版本 | 用哪份 EFI | 触控板 | 雷电口 USB 3.2 | 关键手段 |
 | --- | --- | --- | --- | --- |
 | **78WW** | `EFI-Tahoe/EFI` | ✅ | ✅ | 加载 **`DSDT.aml`**（78WW 预打补丁，已拆 `If (PCHA)`） |
-| **83WW** | `EFI-Tahoe-83WW/EFI` | ✅（预期） | ✅（预期） | **不加载 DSDT**；`APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
+| **83WW** | `EFI-Tahoe-83WW/EFI` | ✅ | ✅ | **不加载 DSDT**；`APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
 
 macOS 15（`EFI-Sequoia/`）目前只做了 78WW 的验证；83WW 上要不要另做一份，取决于后续有没有人在 15 上测。
 
@@ -61,7 +61,9 @@ ACPI Error: [TDC1] Namespace lookup failure
 
 - 来源：一份**同机型、已在 83WW 上实测可用**的 EFI（触控板与雷电口 USB 3.2 均正常），其关键改动就是本页 §2 的两条 PC02 补丁 + `APIC-CPU24`；
 - 本仓库的处理：以 `EFI-Tahoe/` 为底，套用上述 ACPI 改动与 5 口 USB 映射，**去掉核显部分**，保留我们的蓝牙 A2DP 修复、`Kernel>Block`（`IONDRVSupport` / `AppleEthernetRL`）、`NullMothSafe` 工具、`MacBookPro16,2`；
-- **状态：尚未实机验证**（2026-11-09 整理，等待在 83WW 上测试）。
+- **状态：2026-11-09 已在 83WW 上实机验证通过** —— 可正常进桌面，内建触控板与雷电口 USB 3.2 均正常（测试机即本仓库目标机型，BIOS 83WW）。
+
+> 验证时的 EFI 与仓库 `EFI-Tahoe-83WW/EFI` **逐字节一致**（204 个共有文件全同，仅 `config.plist` 里多一条"DSDT 禁用"的占位条目，行为等效）。
 
 ### 首次在 83WW 上启动的注意事项
 
@@ -88,5 +90,6 @@ ACPI Error: [TDC1] Namespace lookup failure
 | 2026-11-02 | 83WW + 强制 `TPD0._STA = 0x0F` | 能进系统，但 **USB-C 口状态被破坏**（U 盘不识别） |
 | 2026-11-05 | 83WW + 自建 `SSDT-TPD1`（`\_SB.PC02.I2C1` 下新设备） | `Scope` 引用触发 PC02 子树，**雷电 USB 3.2 又失效** |
 | 2026-11-09 | 78WW + 83WW 配方（两条 PC02 + APIC 替换） | **开不了机**，见 §2 的 `UBTC` 连锁 |
+| 2026-11-09 | **83WW + 83WW 配方**（本仓库 `EFI-Tahoe-83WW/`） | **通过**：进桌面、触控板可用、雷电口 USB 3.2 正常 |
 
 结论：**`PC02` 能不能打开，由 BIOS 版本决定子树内容；不是补丁写法问题。** 78WW 走 DSDT，83WW 走补丁，两套并存。
