@@ -2,17 +2,18 @@
 
 面向 **Lenovo Legion Y9000P IAX10H / 板号 83F5 / Intel Core Ultra 9 275HX / RTX 5070 Ti Laptop** 的 OpenCore EFI。
 
-**仓库现在是两份 EFI，按系统版本选一份用：**
+**仓库现在是三份 EFI，按「系统版本 + BIOS 版本」选一份用：**
 
-| 目录 | 目标系统 | 状态 |
-| --- | --- | --- |
-| [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
-| [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
+| 目录 | 目标系统 | 适用 BIOS | 状态 |
+| --- | --- | --- | --- |
+| [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 78WW | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
+| [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | **78WW** | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
+| [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI) | **macOS 26 Tahoe**（26.4+） | **83WW** | 2026-11-09 新增：无 `DSDT.aml` + APIC 替换 + 两条 PC02 补丁 + `TXHC` 5 口；**尚未实机验证** |
 
-> 两份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
-> **不要两份混拷**：Wi-Fi / 蓝牙 kext 是分系统版本的（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）。
+> 三份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`、`EFI-Tahoe-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
+> **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
 >
-> **⚠️ BIOS 版本**：本 EFI 只在 **78WW** 上验证；**83WW 已知会让内建触控板与雷电口 USB 3.2 同时失效**，原因与处理见第 6 节。
+> **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe/`；83WW 用 `EFI-Tahoe-83WW/`**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 **这一版做成了这几件事：**
 
@@ -242,6 +243,10 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 │   └── EFI/                      ← macOS 26 用：同样整个 EFI 拷到 ESP 根目录
 │       ├── BOOT/BOOTx64.efi
 │       └── OC/                   ← Tahoe 专用 kext（NMHDA / SimpleHDA / AW88399 25.x / AirportItlwm-Tahoe-BE200 / IntelBT 25x）
+├── EFI-Tahoe-83WW/
+│   └── EFI/                      ← macOS 26 + **BIOS 83WW** 用：无 DSDT、带 APIC-CPU24 与两条 PC02 补丁
+│       ├── BOOT/BOOTx64.efi
+│       └── OC/                   ← 其余与 EFI-Tahoe 相同（kext / UTBMap 5 口 / 蓝牙 A2DP）
 ├── README-macOS26-Tahoe.md       ← macOS 26 EFI 的详细说明（改动清单、取舍、排错）
 ├── docs/
 │   ├── AUDIO-AW88399.md          ← 声卡拓扑、Linux 对照、验证与排错
@@ -265,7 +270,8 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 1. **备份**你现在能启动的 EFI 到另一块盘或 U 盘。
 2. 按系统选一份，把对应的 **`EFI` 目录整个**复制到 FAT32 的 EFI 分区根目录（不用改名；**保留** `EFI/Microsoft`，否则 Windows 引导会丢）：
    - macOS 15 → `EFI-Sequoia/EFI`
-   - macOS 26 → `EFI-Tahoe/EFI`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
+   - macOS 26 + **BIOS 78WW** → `EFI-Tahoe/EFI`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
+   - macOS 26 + **BIOS 83WW** → `EFI-Tahoe-83WW/EFI`（差异见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)）
 3. 用 GenSMBIOS 生成 **`MacBookPro16,2`** 的三码：`SystemSerialNumber`、`MLB`、`SystemUUID`；
    `ROM` 填有线/无线网卡的 MAC（去掉分隔符，6 字节）。
 4. 用 ProperTree / Xcode 填进 `config.plist` 的 `PlatformInfo > Generic`。
@@ -287,18 +293,18 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 | Above 4G Decoding / Resizable BAR | **保持默认** | 配置里 `ResizeAppleGpuBars = -1`、`ResizeGpuBars = -1`（交还固件原值）；固定 8 GB 重设会让固件在进选择界面前挂住 |
 | 显卡模式（MUX / Hybrid / Discrete） | 按需 | 内屏交给独显 = 有画面但开机多 ~98 秒（第 8 节）；混合/集显模式内屏无输出 |
 
-### ⚠️ BIOS 版本必须停留在 78WW
+### BIOS 版本：78WW 与 83WW 各用一份 EFI
 
-| BIOS | 内建 I2C 触控板 | 雷电口 USB 3.2 | 开机 |
-| --- | --- | --- | --- |
-| **78WW（必须）** | ✅ 正常 | ✅ 正常 | 正常 |
-| 83WW（不要升） | ❌ 设备消失（`ioreg` 查不到 `TPD0`） | ❌ 只剩 USB 2.0 | 刷 `ACPI Error ... [\_SB.UBTC._INI] AE_NOT_FOUND`，几十秒才进桌面 |
+| BIOS | 用哪个 EFI | 触控板 | 雷电口 USB 3.2 | 说明 |
+| --- | --- | --- | --- | --- |
+| **78WW** | `EFI-Tahoe/EFI` | ✅ | ✅ | 靠 `DSDT.aml`（78WW 预打补丁，拆掉 `If (PCHA)`） |
+| **83WW** | `EFI-Tahoe-83WW/EFI` | ✅（预期） | ✅（预期） | 不加载 DSDT；改用 `APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
 
-**原因**：83WW 固件把 `Device (PC02)` 包在 `If (PCHA)` 里，而 macOS 侧 `PCHA` 读 0 → `\_SB.PC02` 整段不加载 → 内建触控板 `\_SB.PC02.I2C1.TPD0` 不存在；同一版固件下雷电控制器的 SuperSpeed 通道也不会拉起，只剩 USB 2.0。
+**两者不能混用**：
+- `EFI-Tahoe/`（78WW）放到 83WW 上 → 触控板消失、雷电口只剩 USB 2.0；
+- `EFI-Tahoe-83WW/` 放到 78WW 上 → **开不了机**：78WW 的 `If (PCHA)` 块里还包着 `UBTC` / `UCM` / `UCH` / `UBST` / `DGPB` / `DGPS` 这些设备，拆开后它们的 `_INI` 找不到 `UBSC`（Region）等依赖，刷一串 `AE_NOT_FOUND`（2026-11-09 实测）。
 
-**这不是 EFI 能修的**：拆 `If (PCHA)`、离线预打补丁 DSDT、在 `\_SB.PC02.I2C1` 下自建 `TPD1` 设备，三种做法都会在 `\_SB.UBTC._INI` 处崩（`AE_NOT_FOUND` 连锁）。**回退 78WW 后两项都会自愈**，且与 `UTBMap` 是 3 口还是 5 口无关（实测两种都正常）。
-
-回退后请重新确认 Secure Boot（关）、VT-d（关）、Thunderbolt Security（No Security 或 SL1），必要时 `Reset NVRAM`。
+> `EFI-Tahoe-83WW/` 是基于一份**已在 83WW 上实测可用**的同机型 EFI 整理的，但**去掉了它的核显驱动部分**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff` 等）并保留本仓库的蓝牙 A2DP 修复，**尚未在 83WW 上实机验证**；首次使用建议保留 `-v` 观察日志。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 其余 BIOS 设置见上表。
 
@@ -480,12 +486,22 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
+- **2026-11-09 — 拆出 83WW 专用 EFI（`EFI-Tahoe-83WW/`）**：
+  - 78WW 的 `If (PCHA)` 块里包着 `UBTC`/`UCM`/`UCH`/`UBST`/`DGPB`/`DGPS`，拆开后 `_INI` 找不到 `UBSC` 等依赖 → `AE_NOT_FOUND` 连锁；**同一套补丁在 78WW 上实测开不了机**；
+  - 83WW 上可用的写法：**不加载 DSDT**，`ACPI>Delete` 掉 856 字节 APIC 后加 `APIC-CPU24.aml`，并打两条 PC02 补丁（`a04e2f92…` 与 `a08e7716…`），`UTBMap` 的 `TXHC` 补 5 口；
+  - 新目录 `EFI-Tahoe-83WW/EFI`：在上述基础上**去掉核显相关**（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff`），保留蓝牙 A2DP、`Kernel>Block`、`NullMothSafe` 工具、`MacBookPro16,2`；boot-args 追加 `TSC_sync_margin=0`；
+  - **未实机验证**，首次在 83WW 上启动请保留 `-v`；开机卡住先把 `APIC-CPU24.aml` 条目停用再试；
+  - 文档：README 顶部/§4/§5/§6、新增 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)、`docs/INSTALL.md`、`docs/EFI-DETAILS.md`、`docs/TROUBLESHOOTING.md`、`docs/CHANGELOG.md`。
+
+---
+
 ## 13. 文档索引
 
 - [EFI 细节](docs/EFI-DETAILS.md)：ACPI、Kext、config 各段、Quirks、启动参数
 - [声卡原理](docs/AUDIO-AW88399.md)：ALC287 + AW88399 拓扑、Linux 对照、验证与排错
 - [**macOS 26（Tahoe）EFI 说明**](README-macOS26-Tahoe.md)：两份 EFI 的取舍、改动清单、装驱动顺序、排错
 - [安装步骤](docs/INSTALL.md)：BIOS、三码、复制 EFI、首次启动
+- [**BIOS 版本对照**](docs/BIOS-VERSIONS.md)：78WW / 83WW 各用哪份 EFI、差异与切换
 - [故障排查](docs/TROUBLESHOOTING.md)：启动、声卡、Wi-Fi、触摸板、NVIDIA
 - [变更记录](docs/CHANGELOG.md)
 - [第三方组件](THIRD-PARTY.md)

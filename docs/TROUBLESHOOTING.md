@@ -6,16 +6,21 @@
 
 ## 1. 启动问题
 
-### 1.0 先确认 BIOS 版本：83WW 有两处致命回归
+### 1.0 先确认 BIOS 版本：78WW 与 83WW 要用不同的 EFI
 
-| 症状 | 78WW | 83WW |
-| --- | --- | --- |
-| 内建触控板完全无反应（`ioreg` 里查不到 `TPD0`） | 正常 | ❌ |
-| 雷电口只认 USB 2.0，不认 U 盘 / SSD | 正常 | ❌ |
-| 开机刷 `ACPI Error ... [\_SB.UBTC._INI] AE_NOT_FOUND`，要等几十秒 | 不出现 | ❌ 常见 |
+| 症状 | 78WW + `EFI-Tahoe/` | 83WW + `EFI-Tahoe-83WW/` | 混用（78WW + 83WW 配方） |
+| --- | --- | --- | --- |
+| 能进桌面 | ✅ | 预期 ✅（待实测） | ❌ 卡在 `\_SB.UBTC._INI` |
+| 内建触控板（`ioreg` 查 `TPD0`） | ✅ | 预期 ✅ | ❌ |
+| 雷电口 USB 3.2 | ✅ | 预期 ✅ | ❌ |
+| 开机刷 `\_SB.UBTC._INI` / `UBSC` / `TCM1` 之类 `AE_NOT_FOUND` | 不出现 | 不出现 | **必现** |
 
-**处理：把 BIOS 回退到 78WW。** 这三项在 83WW 下都不是 EFI 能修的 —— 拆 `If (PCHA)`、换预打补丁 DSDT、在 `\_SB.PC02.I2C1` 下自建 `TPD1` 设备都试过，全部卡在 `\_SB.UBTC`；回退后两项功能自愈，与 `UTBMap` 是 3 口还是 5 口无关。
-回退后重新确认 Secure Boot / VT-d / Thunderbolt Security，必要时 `Reset NVRAM`。
+**判断方法**：触控板与外放是一对连体指标（都挂在 `\_SB.PC02` 下）——两者同时好 = `PC02` 就位；两者同时坏 = `PC02` 没打开。
+
+**处理**：
+- 78WW → 用 `EFI-Tahoe/EFI`（靠 `DSDT.aml`）；
+- 83WW → 用 `EFI-Tahoe-83WW/EFI`（无 DSDT + `APIC-CPU24` + 两条 PC02 补丁 + `TXHC` 5 口）；
+- 两套**不能互换**，原因与细节见 [BIOS 版本对照](BIOS-VERSIONS.md)。
 
 ### 1.1 卡在 `OC: Prelinked status`
 

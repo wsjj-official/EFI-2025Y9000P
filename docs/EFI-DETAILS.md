@@ -555,6 +555,22 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
+## 7.1 83WW 专用变体（`EFI-Tahoe-83WW/`）与本文件的差异
+
+本文件第 1–7 节描述的是 **78WW 版**（`EFI-Tahoe/`）。83WW 变体只改 ACPI 与 USB 映射，其余（kext、Booter、DeviceProperties、Misc、PlatformInfo）与 78WW 版一致：
+
+| 项目 | 78WW 版 | 83WW 版 |
+| --- | --- | --- |
+| `ACPI > Add` | `DSDT.aml`（启用）+ 9 SSDT | **无 DSDT**；9 SSDT + `APIC-CPU24.aml` |
+| `ACPI > Delete` | `DMAR` | `DMAR` + `APIC`（OEM `CB-01   `，TableLength 856） |
+| `ACPI > Patch` | 9 条 | 10 条：多两条 PC02（`a04e2f92…`、`a08e7716…`），去掉 0 命中的占位补丁 |
+| `UTBMap` `TXHC` | 3 口 | 5 口（`SS03@4`、`SS04@5`） |
+| `boot-args` | 见 §6 | 多 `TSC_sync_margin=0` |
+
+含义与验证状态见 [BIOS 版本对照](BIOS-VERSIONS.md)。
+
+---
+
 ## 8. 文件校验
 
 发布包根目录提供 `SHA256SUMS.txt`。校验方式：
