@@ -76,7 +76,7 @@
 | --- | --- | --- | --- |
 | `NMHDA.kext` | 1.0.0 | 25.0.0–25.99.99 | Tahoe 的 HDA 控制器适配（macOS 26 把 AppleHDA 从系统里拿掉了） |
 | `SimpleHDA.kext` | 1.0.0 | 25.0.0–25.99.99 | 在 Tahoe 上把 AppleHDA 找回来，配合 AppleALC 才能出声音 |
-| `AirportItlwm-Tahoe-BE200.kext` | 2.4.0 `_FIX29_20261101` | 25.4.0–25.99.99 | BE200 的 Tahoe 版（IO80211 / Skywalk ABI 和 15 不一样，不能混用） |
+| `AirportItlwm-Tahoe-BE200.kext` | 2.4.0 `_FIX31_20261109` | 25.4.0–25.99.99 | BE200 的 Tahoe 版（IO80211 / Skywalk ABI 和 15 不一样，不能混用） |
 | `IntelBluetoothFirmware-2.5.1.kext` | 2.5.1 | 全部 | Intel 蓝牙固件（26 用） |
 | `IntelBTPatcher-BE200-25x.kext` | 2.5.0 | 全部 | BE200 专用 patcher（"25x" 就是给 Darwin 25） |
 | `BlueToolFixup.kext` | 2.7.3 **FixA2DP**（42,464 B） | 21.0.0+ | 蓝牙栈修正 + A2DP 快连门控（`-btlfxa2dpcheck`）；原来的 BE200 实验版（`-btlfxbe200key`）已替换 |
@@ -324,7 +324,7 @@ Get-FileHash "EFI-Sequoia/EFI/OC/config.plist" -Algorithm SHA256
      进不了 → 查 EFI；进得去但卡成幻灯片 → 装驱动。
    - 仓库结构改为 `EFI-Sequoia/` + `EFI-Tahoe/` 两份并列；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全相同，
      差异只在 Wi-Fi、蓝牙、AppleHDA 这几组 kext 与 `boot-args`。
-   - Wi-Fi 升到 **`2.4.0 _FIX29_20261101`**（26 用 `AirportItlwm-Tahoe-BE200`，15 用 `AirportItlwm-Sequoia-BE200`）；这一版修「关联/认证通过但链路不建立、拿不到地址」的端口授权问题，另含 RX 校验、Fast Lane、160→20 降带宽等。
+   - Wi-Fi 升到 **`2.4.0 _FIX31_20261109`**（26 用 `AirportItlwm-Tahoe-BE200`，15 用 `AirportItlwm-Sequoia-BE200`）；这一版修「关联/认证通过但链路不建立、拿不到地址」的端口授权问题，另含 RX 校验、Fast Lane、160→20 降带宽等。
    - **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax；26 上 EHT/MLO 仍为公测、未实测。
    - `Misc > Debug` 默认关闭（`Target=0`）；排错时改回 `67 / 2147483650 / true / true`。
 

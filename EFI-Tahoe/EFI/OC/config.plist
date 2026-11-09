@@ -1027,7 +1027,7 @@
 				<key>BundlePath</key>
 				<string>AirportItlwm-Tahoe-BE200.kext</string>
 				<key>Comment</key>
-				<string>macOS 26 BE200 Tahoe build 2.4.0_FIX29_20261101 (6GHz SSID via Multiple-BSSID profile, per-profile IEs, MFPC/MFPR on 6GHz, scan completion match); added 8086:272B match</string>
+				<string>macOS 26 BE200 Tahoe build 2.4.0_FIX31_20261109 (Wi-Fi 7 MLO: crash-free join, all-links query, 6GHz WPA3+WPA2 link pairing; WPA2/WPA3 SHA256-PSK; 5GHz A-MSDU fix); 8086:272B match</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>

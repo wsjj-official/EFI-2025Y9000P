@@ -17,7 +17,7 @@
 
 **这一版做成了这几件事：**
 
-1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX29_20261101`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
+1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX31_20261109`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
 2. **外放修好** —— Realtek ALC287 + 两颗 Awinic AW88399 智能功放（高音 + 低音同时工作，音量/静音正常）；
 3. **蓝牙 A2DP 修复** —— AirPods 等设备「能连上、放歌没声 / 断一下就没声」已修（`BlueToolFixup` FixA2DP + `-btlfxa2dpcheck`）；
 4. **内屏亮度** —— `nvrmacpibl=1`，由 NullMoth NVKMS 注册背光（需装 NVIDIA 驱动）；
@@ -73,7 +73,7 @@
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX29_20261101`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持** |
+| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX31_20261109`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -120,20 +120,20 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-11-01 更新，`_FIX29_20261101`）**：两份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX29_20261101`**（`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **6 GHz 的 SSID 解析**：
+**本版驱动（2026-11-09 更新，`_FIX31_20261109`）**：三份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX31_20261109`**（`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **Wi-Fi 7 多链路（MLO）** 与 5 GHz 回归：
 
-- **6 GHz 名称**：同一射频把多个 BSS 合并成一条 beacon 广播时，各 BSS 的名字写在 **Multiple BSSID 元素的 profile** 里；此前不读这段，6 GHz 网络始终"没有名字"。现在按 profile 发布结果、BSSID 优先取 RNR 里路由器声明的地址；
-- **SSID 解析状态**：正常 / 隐藏（长度 0）/ 全零 / 超长 / 无该元素 / 被截断，六种状态分开记录，能区分"路由器隐藏"与"帧本身有问题"；
-- **每条 profile 用该 BSS 自己的元素**（RSN / 能力字段不再沿用发送方的），合成链里去掉只属于集合的 Multiple BSSID 元素；
-- **6 GHz 关联**：RSNE 里强制置 **MFPC/MFPR**（802.11ax 要求），此前 6 GHz 关联请求缺这两位；
-- **扫描**：完成通知按批次归属判定；接收计数移到名字判断之前；FCS/IE 长度一次性算清，不再靠固定偏移；
-- 继承 Fix26–Fix28 的修复（端口授权、换网一次切换、6 GHz 监管、WPA3/PMF 密钥安装失败上报等）。
-
-**开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
+- **MLO 加入不再崩固件**：连开启 MLO 的路由器时，认证前不再触发固件崩溃（它的 2.4 / 5 / 6 GHz 网络都受影响）；
+- **拿到 AP 的全部 link**：加入 MLD 时会主动索取该 AP 的所有链路，即使上次扫描没扫到也能找到，重连后同样有效；
+- **6 GHz 的 WPA3-only 链路**可以和同一路由器的 WPA2/WPA3 链路一起使用；
+- **WPA2/WPA3 过渡网络**：同时提供 SHA256-PSK 的网络现在也接受普通 WPA2-PSK；
+- **修掉 Fix30 的 5 GHz 掉线**：发送 A-MSDU 帧改成固件期望的方式，不再触发固件错误与随之而来的复位；
+- 保留 Fix30 的 A-MSDU 聚合、320 MHz 主信道上报、TID-to-link 映射；以及 Fix29 的 6 GHz SSID/Multiple-BSSID 解析。
 
 **开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
 
-**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX29_20261101` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+**开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
+
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX31_20261109` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
 
 > **连接建议（2026-10-30 更新）：WPA3-Personal（SAE）已实测可用**，可以直接用 H2E 的 WPA3 热点。
 >
@@ -504,6 +504,14 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 ---
 
+- **2026-11-09 — Wi-Fi 升到 `_FIX31_20261109`（三份 EFI 同步）**：
+  - 三份 EFI 的 Wi-Fi kext 全部换到 **2.4.0 `_FIX31_20261109`**（15 用 Sequoia 构建，26 两份用 Tahoe 构建，两者 sha 不同）；
+  - 主要修复：**Wi-Fi 7 MLO 加入不再崩固件**、加入 MLD 时索取全部 link、6 GHz 的 WPA3-only link 与 WPA2/WPA3 link 并用、WPA2/WPA3 过渡网络接受 SHA256-PSK、**修掉 Fix30 的 5 GHz 高负载掉线**（A-MSDU 发送方式）；
+  - 保留 Fix30（A-MSDU 聚合、320 MHz、TID-to-link）与 Fix29（6 GHz SSID / Multiple-BSSID）的改动；
+  - `itlwm_he=1` 仍是 HE/Wi-Fi 6 的前提；WPA3 仍默认 H2E-only。
+
+---
+
 ## 13. 文档索引
 
 - [EFI 细节](docs/EFI-DETAILS.md)：ACPI、Kext、config 各段、Quirks、启动参数
@@ -523,7 +531,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - [VoodooI2C](https://github.com/VoodooI2C/VoodooI2C)：I2C 触摸板与设备 nub
 - [Ersiter/Legion-ALC287-AW88399-macOS](https://github.com/Ersiter/Legion-ALC287-AW88399-macOS)：ALC287 共享 DAC 分支、AW88399Driver、双 I2C 资源补丁
 - [**Ersiter**](https://github.com/Ersiter)：**BIOS 83WW 的修复方案**（`APIC-CPU24` 替换、`If (PCHA)` 的两层拆除即两条 PC02 补丁、`TXHC` 5 口 USB 映射）由他提供；本仓库的 `EFI-Tahoe-83WW/` 在其基础上整理（去掉核显部分、保留蓝牙 A2DP 等）
-- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX29_20261101` 构建来源，尚未合并进上游主仓库）
+- [**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200)：BE200 原生 Wi-Fi 驱动（**内测分支**；本包 `2.4.0 _FIX31_20261109` 构建来源，尚未合并进上游主仓库）
 - [OpenIntelWireless/itlwm](https://github.com/OpenIntelWireless/itlwm)：itlwm / AirportItlwm 上游项目
 - NullMoth（当前 2.7.2）：NVIDIA 驱动与工具链（本包不含驱动）
 - Linux 侧参考：[16iax10h-linux-sound-saga](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga)、[作者博客](https://www.wsjj.top/archives/176)

@@ -311,3 +311,15 @@
 - `EFI-Sequoia/`、`EFI-Tahoe/`、`EFI-Tahoe-83WW/` 三份的 `boot-args` 均移除 `-v`；其余参数（`keepsyms=1`、`-vi2c-force-polling`、`-ibtcompatbeta`、`gfxrst=4`、`nvfb*`、`alcid/alcverbs`、`nvrmacpibl`、`itlwm_he`、`-btlfxa2dpcheck`、`TSC_sync_margin=0`）不变。
 - 排错需要看最后一行时，临时把 `-v` 加回即可。
 - 文档同步：README §7（说明 + 参数表）、更新记录、`docs/EFI-DETAILS.md` §6、`docs/TROUBLESHOOTING.md` §1.2。
+
+---
+
+## 2026-11-09 — Wi-Fi 升到 `_FIX31_20261109`（三份 EFI 同步）
+
+- 三份 EFI 的 Wi-Fi kext 全部换到 **2.4.0 `_FIX31_20261109`**：`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`（19,237,688 B），`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 用 `AirportItlwm-Tahoe-BE200`（19,239,984 B）。
+- **Wi-Fi 7 MLO**：加入开启 MLO 的路由器不再在认证前崩固件；加入 MLD 时索取全部 link（含重连后）；6 GHz 的 WPA3-only link 可与同路由器的 WPA2/WPA3 link 并用。
+- **WPA2/WPA3 过渡网络**：同时提供 SHA256-PSK 的网络也接受普通 WPA2-PSK。
+- **修掉 Fix30 的 5 GHz 高负载掉线**：A-MSDU 发送方式改为固件期望的形式，不再触发固件错误与复位。
+- 保留 Fix30（A-MSDU 聚合、320 MHz 主信道、TID-to-link）与 Fix29（6 GHz SSID/Multiple-BSSID）。
+- `itlwm_he=1` 不变；WPA3 仍默认 H2E-only；EHT/MLO 在 26 上仍属实验性。
+- 文档：README（Wi-Fi 段 / 状态表 / 更新记录）、`docs/EFI-DETAILS.md`、`THIRD-PARTY.md`、`README-macOS26-Tahoe.md`。
