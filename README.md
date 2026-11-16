@@ -2,18 +2,19 @@
 
 面向 **Lenovo Legion Y9000P IAX10H / 板号 83F5 / Intel Core Ultra 9 275HX / RTX 5070 Ti Laptop** 的 OpenCore EFI。
 
-**仓库现在是三份 EFI，按「系统版本 + BIOS 版本」选一份用：**
+**仓库现在是四份 EFI，按「系统版本 + BIOS 版本」选一份用：**
 
 | 目录 | 目标系统 | 适用 BIOS | 状态 |
 | --- | --- | --- | --- |
 | [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 78WW | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
 | [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | **78WW** | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
 | [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI) | **macOS 26 Tahoe**（26.4+） | **83WW** | 2026-11-09 新增：无 `DSDT.aml` + APIC 替换 + 两条 PC02 补丁 + `TXHC` 5 口；**已于 2026-11-09 在 83WW 上实测通过**（进桌面、触控板、雷电 USB 3.2 正常） |
+| [`EFI-Sequoia-83WW/EFI/`](EFI-Sequoia-83WW/EFI) | **macOS 15 Sequoia**（15.2+） | **83WW** | 2026-11-16 新增：`EFI-Sequoia` 的 kext/boot-args + **83WW 的 ACPI 配方**（`APIC-CPU24` + 两条 PC02 + `TXHC` 5 口）；**未装 NVIDIA 驱动也能进桌面（1–3 FPS）**，用于"先装驱动再升级到 26"的过渡步骤 |
 
-> 三份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`、`EFI-Tahoe-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
+> 四份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`、`EFI-Tahoe-83WW/EFI/`、`EFI-Sequoia-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
 > **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
 >
-> **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe/`；83WW 用 `EFI-Tahoe-83WW/`**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
+> **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe/`（或 `EFI-Sequoia/`）；83WW 用 `EFI-Tahoe-83WW/`（或 `EFI-Sequoia-83WW/`）**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 **这一版做成了这几件事：**
 

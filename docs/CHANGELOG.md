@@ -1,5 +1,20 @@
 # 变更记录
 
+## 2026-11-16 — 新增 `EFI-Sequoia-83WW/`（macOS 15 + BIOS 83WW）
+
+- 背景：**BIOS 83WW + macOS 26 + 未装 NVIDIA 驱动 = 黑屏只剩光标**。26 上排除了 `IONDRVSupport`
+  之后没有可用的合成后端（Apple 的通用加速器 `IOVersatile` 依赖 Apple Silicon 的 DCP，x86_64 上加载不了），
+  所以"先点亮桌面再装驱动"这条路在 26 上走不通；15 上通用帧缓冲仍然可用，没有驱动也能进桌面（1–3 FPS）。
+- 新增目录 `EFI-Sequoia-83WW/EFI`：以 `EFI-Sequoia/` 为基线，`ACPI/` 换成 83WW 配方
+  （无 `DSDT.aml`、`APIC-CPU24.aml`、`ACPI>Delete` 丢 `DMAR` 并替换 856 字节 `APIC`、10 条 `ACPI>Patch` 含两条 `PC02`），
+  `UTBMap`/`USBToolBox` 换成 83WW 端口表（`TXHC` 5 口），`boot-args` 追加 `TSC_sync_margin=0`（配 `CpuTscSync`）。
+- `Kernel>Block` 只有 `AppleEthernetRL`（**不排除** `IONDRVSupport`）—— 这是"无驱动也能出慢桌面"的前提。
+- 附带 `config-with-driver.plist`：装好驱动后若要屏蔽 `IONDRVSupport`（`Exclude`，`MinKernel 20.0.0`）可直接换用。
+- 用途定位：**过渡站**。15 上装好 NullMoth → 升级到 26 → 换回 `EFI-Tahoe-83WW/` 并在 26 上重跑一次 `install.sh`
+  （15 装的是 15 的 `NVAccel`，26 需要 26 的，否则会出现"驱动加载成功但桌面全黑"）。
+- 实测：2026-11-16 在 **BIOS 83WW + macOS 15** 上进入桌面（慢，1–3 FPS），触控板与雷电口可用。
+- 三份 EFI 默认不带 `-v`（2026-11-09 起），本份同样不带；排错时临时加回即可。
+
 ## v1.0 — 2026-10-27
 
 首个正式整理版，基于本机 2026-10-27 可启动、外放正常的 EFI 导出。
