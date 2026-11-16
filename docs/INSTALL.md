@@ -12,7 +12,7 @@
 - [ProperTree](https://github.com/corpnewt/ProperTree) 或 Xcode
 - 目标系统：macOS 15 Sequoia（实测 15.8 / 24H23）或 macOS 26 Tahoe（实测 26.7）
 
-> **先选 EFI**：macOS 15 用 `EFI-Sequoia/EFI/`，macOS 26 用 `EFI-Tahoe/EFI/`（整个 `EFI` 目录拷到 ESP 根目录，不用改名；两份不要混拷）。
+> **先选 EFI**：macOS 15 用 `EFI-Sequoia-78WW/EFI/`，macOS 26 用 `EFI-Tahoe-78WW/EFI/`（整个 `EFI` 目录拷到 ESP 根目录，不用改名；两份不要混拷）。
 > macOS 26 的取舍与装驱动顺序见 [README-macOS26-Tahoe.md](../README-macOS26-Tahoe.md)。
 
 > 先把当前 EFI 整个 `EFI` 目录复制到 U 盘或另一块硬盘。不要在没有回退手段的情况下覆盖唯一可启动的 EFI。
@@ -98,12 +98,12 @@ ifconfig en0 | grep ether
 | VT-d | Enabled | 本 EFI 删除 DMAR；如遇启动/设备问题可尝试 Disabled |
 | CFG Lock | Disabled（如可改） | 不改也可以，`AppleXcpmCfgLock=true` 会绕过 |
 | Intel SGX | Disabled（如可改） | 避免额外变量 |
-| Thunderbolt / USB4 | Security Level = No Security 或 SL1 | 雷电口的 **USB 3.2** 依赖它；**78WW 用 `EFI-Tahoe/`，83WW 用 `EFI-Tahoe-83WW/`**（见 [BIOS 版本对照](BIOS-VERSIONS.md)） |
+| Thunderbolt / USB4 | Security Level = No Security 或 SL1 | 雷电口的 **USB 3.2** 依赖它；**78WW 用 `EFI-Tahoe-78WW/`，83WW 用 `EFI-Tahoe-83WW/`**（见 [BIOS 版本对照](BIOS-VERSIONS.md)） |
 | Boot Order | UEFI: OpenCore 所在盘优先 | 安装/升级时 |
 
 > 如果 BIOS 没有开放 CFG Lock / VT-d / ReBAR 等选项，保持默认即可；本 EFI 的 Quirks 已覆盖常见情况。
 >
-> **⚠️ BIOS 与 EFI 必须配对**：**78WW → `EFI-Tahoe/`**；**83WW → `EFI-Tahoe-83WW/`**。用错方向会开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁）。详见 [BIOS 版本对照](BIOS-VERSIONS.md)。
+> **⚠️ BIOS 与 EFI 必须配对**：**78WW → `EFI-Tahoe-78WW/`**；**83WW → `EFI-Tahoe-83WW/`**。用错方向会开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁）。详见 [BIOS 版本对照](BIOS-VERSIONS.md)。
 
 ---
 

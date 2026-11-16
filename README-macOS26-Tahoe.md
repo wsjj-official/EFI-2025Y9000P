@@ -1,7 +1,7 @@
 # macOS 26（Tahoe）可开机 EFI — 说明与改动清单
 
 适用机器：Lenovo Legion Y9000P IAX10H / 83F5 / Core Ultra 9 275HX / RTX 5070 Ti Laptop
-对应仓库目录：**`EFI-Tahoe/EFI/`**（macOS 26 用）；对照的是同仓库的 `EFI-Sequoia/`（macOS 15，长期验证）
+对应仓库目录：**`EFI-Tahoe-78WW/EFI/`**（macOS 26 用）；对照的是同仓库的 `EFI-Sequoia-78WW/`（macOS 15，长期验证）
 
 > **⚠️ BIOS 83WW 请改用 [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI)**：本文件描述的是 **78WW** 版（靠 `DSDT.aml`）。83WW 上需要另一套 ACPI 写法（无 DSDT + APIC 替换 + 两条 PC02 补丁），**该版本已于 2026-11-09 在 83WW 上实测通过**；两套不能互换，见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 参考包：外部拿到的 `Tahoe-EFI-share`（别人做的 macOS 26 适配起点，作者自己标注 "not ready to boot"）
@@ -23,7 +23,7 @@
 
 | 目录 | 用途 | 什么时候用 |
 | --- | --- | --- |
-| `EFI-Tahoe/` | **主用**（本文件对应的包） | 正常启动 macOS 26。配置里已按 NullMoth 要求排除 `com.apple.iokit.IONDRVSupport`，适合**已装 / 将装** NVIDIA 驱动 |
+| `EFI-Tahoe-78WW/` | **主用**（本文件对应的包） | 正常启动 macOS 26。配置里已按 NullMoth 要求排除 `com.apple.iokit.IONDRVSupport`，适合**已装 / 将装** NVIDIA 驱动 |
 | （诊断变体，未随仓库发布） | 兜底 | 还没装驱动、要进 Recovery / 安装器时用；做法是把 `Kernel > Block` 里 `com.apple.iokit.IONDRVSupport` 那条**禁用**（`Enabled=false`），装完驱动再打开 |
 
 > 现状：驱动已经装好、实机已验证能进桌面，所以兜底包不需要常驻，已经删掉了。
@@ -279,16 +279,16 @@ E:\macos\_work\verify_fix24.py            ← 四个 EFI 的复核脚本
 
 | 目录 | 内容 |
 | --- | --- |
-| `EFI-Tahoe/EFI/` | **仓库里的 macOS 26 包**：里面就是 `BOOT/` + `OC/`，整个 `EFI` 拷到 ESP 根目录即可，不用改名 |
-| `EFI-Sequoia/EFI/` | 同仓库的 macOS 15 包，结构相同 |
+| `EFI-Tahoe-78WW/EFI/` | **仓库里的 macOS 26 包**：里面就是 `BOOT/` + `OC/`，整个 `EFI` 拷到 ESP 根目录即可，不用改名 |
+| `EFI-Sequoia-78WW/EFI/` | 同仓库的 macOS 15 包，结构相同 |
 
 放 EFI 分区时，把选中那份的 `EFI` 目录整个拷到分区根目录即可（**不用改名**）；两份**不要同时拷**。
 
 校验（在仓库根目录）：
 
 ```powershell
-Get-FileHash "EFI-Tahoe/EFI/OC/config.plist" -Algorithm SHA256
-Get-FileHash "EFI-Sequoia/EFI/OC/config.plist" -Algorithm SHA256
+Get-FileHash "EFI-Tahoe-78WW/EFI/OC/config.plist" -Algorithm SHA256
+Get-FileHash "EFI-Sequoia-78WW/EFI/OC/config.plist" -Algorithm SHA256
 ```
 
 ---
@@ -322,7 +322,7 @@ Get-FileHash "EFI-Sequoia/EFI/OC/config.plist" -Algorithm SHA256
 
    - **不装 NVIDIA 驱动也能进桌面**，只是 **约 1–3 FPS**（见第 5 节更正）。这意味着"能不能进系统"和"有没有驱动"是两件事：
      进不了 → 查 EFI；进得去但卡成幻灯片 → 装驱动。
-   - 仓库结构改为 `EFI-Sequoia/` + `EFI-Tahoe/` 两份并列；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全相同，
+   - 仓库结构改为 `EFI-Sequoia-78WW/` + `EFI-Tahoe-78WW/` 两份并列；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全相同，
      差异只在 Wi-Fi、蓝牙、AppleHDA 这几组 kext 与 `boot-args`。
    - Wi-Fi 升到 **`2.4.0 _FIX31_20261109`**（26 用 `AirportItlwm-Tahoe-BE200`，15 用 `AirportItlwm-Sequoia-BE200`）；这一版修「关联/认证通过但链路不建立、拿不到地址」的端口授权问题，另含 RX 校验、Fast Lane、160→20 降带宽等。
    - **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax；26 上 EHT/MLO 仍为公测、未实测。
@@ -332,7 +332,7 @@ Get-FileHash "EFI-Sequoia/EFI/OC/config.plist" -Algorithm SHA256
 
 6. **（2026-10-31 晚）蓝牙换成 FixA2DP 版。**
 
-   - `EFI-Tahoe/EFI/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**，修 AirPods「连上但没声」；
+   - `EFI-Tahoe-78WW/EFI/OC/Kexts/BlueToolFixup.kext`：`BE200 stored-key 实验版（39,808 B，`-btlfxbe200key`）` → **FixA2DP 2.7.3（42,464 B，`-btlfxa2dpcheck`）**，修 AirPods「连上但没声」；
    - `boot-args`：去掉 `-btlfxbe200key`，加 `-btlfxa2dpcheck`；`-ibtcompatbeta` 保留；`-btlfxbeta` 在 26.x 上不需要；
    - `IntelBluetoothFirmware-2.5.1` / `IntelBTPatcher-BE200-25x` **不动**（与修复包里的哈希一致）；
    - 回滚：换回旧 `BlueToolFixup.kext`（仓库外备份 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）并把参数换回 `-btlfxbe200key`；

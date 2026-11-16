@@ -8,10 +8,10 @@
 
 | BIOS 版本 | 用哪份 EFI | 触控板 | 雷电口 USB 3.2 | 关键手段 |
 | --- | --- | --- | --- | --- |
-| **78WW** | `EFI-Tahoe/EFI` | ✅ | ✅ | 加载 **`DSDT.aml`**（78WW 预打补丁，已拆 `If (PCHA)`） |
+| **78WW** | `EFI-Tahoe-78WW/EFI` | ✅ | ✅ | 加载 **`DSDT.aml`**（78WW 预打补丁，已拆 `If (PCHA)`） |
 | **83WW** | `EFI-Tahoe-83WW/EFI` | ✅ | ✅ | **不加载 DSDT**；`APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
 
-macOS 15（`EFI-Sequoia/`）目前只做了 78WW 的验证；83WW 上要不要另做一份，取决于后续有没有人在 15 上测。
+macOS 15（`EFI-Sequoia-78WW/`）目前只做了 78WW 的验证；83WW 上要不要另做一份，取决于后续有没有人在 15 上测。
 
 ---
 
@@ -38,13 +38,13 @@ ACPI Error: [TDC1] Namespace lookup failure
 
 → 内核在 `_INI` 阶段陷进去，**开不了机**（2026-11-09 实测，78WW + 83WW 配方）。
 
-78WW 之所以能开，是因为它走的是**另一条路**：把 78WW 整张 DSDT 预打补丁后当附加表加载（`EFI-Tahoe/EFI/OC/ACPI/DSDT.aml`），`PC02` 在表里就已经是无条件的，且没有触发上面那条 `_INI` 链。
+78WW 之所以能开，是因为它走的是**另一条路**：把 78WW 整张 DSDT 预打补丁后当附加表加载（`EFI-Tahoe-78WW/EFI/OC/ACPI/DSDT.aml`），`PC02` 在表里就已经是无条件的，且没有触发上面那条 `_INI` 链。
 
 ---
 
 ## 3. 两套 EFI 的具体差异
 
-| 项目 | `EFI-Tahoe/`（78WW） | `EFI-Tahoe-83WW/`（83WW） |
+| 项目 | `EFI-Tahoe-78WW/`（78WW） | `EFI-Tahoe-83WW/`（83WW） |
 | --- | --- | --- |
 | `ACPI > Add` | `DSDT.aml` **启用** + 9 张 SSDT | **无 DSDT**；9 张 SSDT + `APIC-CPU24.aml` |
 | `ACPI > Delete` | `DMAR` | `DMAR` + **`APIC`（OEM `CB-01   `，TableLength 856）** |
@@ -60,7 +60,7 @@ ACPI Error: [TDC1] Namespace lookup failure
 ## 4. 83WW 变体的来源与验证状态
 
 - 来源：**Ersiter（<https://github.com/Ersiter>）提供的 83WW 修复方案** —— 关键改动就是本页 §2 的两条 PC02 补丁、`APIC-CPU24` 替换（并先删掉 856 字节的固件 APIC）与 `TXHC` 5 口 USB 映射；该方案已在同机型的 83WW 上实测可用（触控板与雷电口 USB 3.2 均正常）；
-- 本仓库的处理：以 `EFI-Tahoe/` 为底，套用 Ersiter 的上述 ACPI 改动与 5 口 USB 映射，**去掉核显部分**，保留我们的蓝牙 A2DP 修复、`Kernel>Block`（`IONDRVSupport` / `AppleEthernetRL`）、`NullMothSafe` 工具、`MacBookPro16,2`；
+- 本仓库的处理：以 `EFI-Tahoe-78WW/` 为底，套用 Ersiter 的上述 ACPI 改动与 5 口 USB 映射，**去掉核显部分**，保留我们的蓝牙 A2DP 修复、`Kernel>Block`（`IONDRVSupport` / `AppleEthernetRL`）、`NullMothSafe` 工具、`MacBookPro16,2`；
 - **状态：2026-11-09 已在 83WW 上实机验证通过** —— 可正常进桌面，内建触控板与雷电口 USB 3.2 均正常（测试机即本仓库目标机型，BIOS 83WW）。
 
 > 验证时的 EFI 与仓库 `EFI-Tahoe-83WW/EFI` **逐字节一致**（204 个共有文件全同，仅 `config.plist` 里多一条"DSDT 禁用"的占位条目，行为等效）。

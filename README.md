@@ -6,15 +6,15 @@
 
 | 目录 | 目标系统 | 适用 BIOS | 状态 |
 | --- | --- | --- | --- |
-| [`EFI-Sequoia/EFI/`](EFI-Sequoia/EFI) | **macOS 15 Sequoia**（15.2+） | 78WW | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
-| [`EFI-Tahoe/EFI/`](EFI-Tahoe/EFI) | **macOS 26 Tahoe**（26.4+） | **78WW** | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
+| [`EFI-Sequoia-78WW/EFI/`](EFI-Sequoia-78WW/EFI) | **macOS 15 Sequoia**（15.2+） | 78WW | 主力、长期验证：外放（ALC287 + 双 AW88399）、BE200 Wi-Fi、蓝牙 A2DP、亮度全部可用 |
+| [`EFI-Tahoe-78WW/EFI/`](EFI-Tahoe-78WW/EFI) | **macOS 26 Tahoe**（26.4+） | **78WW** | 新增、实测**能进桌面**。**装 NVIDIA 驱动之前会非常卡（约 1–3 FPS）**，装完驱动才正常 |
 | [`EFI-Tahoe-83WW/EFI/`](EFI-Tahoe-83WW/EFI) | **macOS 26 Tahoe**（26.4+） | **83WW** | 2026-11-09 新增：无 `DSDT.aml` + APIC 替换 + 两条 PC02 补丁 + `TXHC` 5 口；**已于 2026-11-09 在 83WW 上实测通过**（进桌面、触控板、雷电 USB 3.2 正常） |
 | [`EFI-Sequoia-83WW/EFI/`](EFI-Sequoia-83WW/EFI) | **macOS 15 Sequoia**（15.2+） | **83WW** | 2026-11-16 新增：`EFI-Sequoia` 的 kext/boot-args + **83WW 的 ACPI 配方**（`APIC-CPU24` + 两条 PC02 + `TXHC` 5 口）；**未装 NVIDIA 驱动也能进桌面（1–3 FPS）**，用于"先装驱动再升级到 26"的过渡步骤 |
 
-> 四份都套在各自的 `EFI/` 目录里（`EFI-Sequoia/EFI/`、`EFI-Tahoe/EFI/`、`EFI-Tahoe-83WW/EFI/`、`EFI-Sequoia-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
-> **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
+> 四份都套在各自的 `EFI/` 目录里（`EFI-Sequoia-78WW/EFI/`、`EFI-Tahoe-78WW/EFI/`、`EFI-Tahoe-83WW/EFI/`、`EFI-Sequoia-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
+> **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
 >
-> **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe/`（或 `EFI-Sequoia/`）；83WW 用 `EFI-Tahoe-83WW/`（或 `EFI-Sequoia-83WW/`）**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
+> **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe-78WW/`（或 `EFI-Sequoia-78WW/`）；83WW 用 `EFI-Tahoe-83WW/`（或 `EFI-Sequoia-83WW/`）**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 **这一版做成了这几件事：**
 
@@ -40,7 +40,7 @@
 | 声卡外放 | `AppleALC` layout 13，能出声但**音量很小**（缺功放驱动） | 增加 `AW88399Driver.kext 0.2`（两颗功放 `0x34`/`0x35` + ACF 固件）+ `AppleALC 1.9.8` 共享 DAC 分支 + `VoodooI2C` dual-resource 补丁，**高音/低音都正常** |
 | SIP | `0xFF0F0000` | `0x0A43`（只为放行第三方 kext，保持最小放宽） |
 | `Kernel>Block` | 还要屏蔽 `IOSkywalkFamily` | 只剩 `AppleEthernetRL` 一条（让 AppleIGC 接管 I225/I226） |
-| 仓库结构 | 三份变体 + `Wi-Fi修复-所需文件/`（含 767 MB 的 OCLP-Mod 安装包） | `EFI-Sequoia/` + `EFI-Tahoe/` 两份 EFI + 文档 + 检查脚本，OCLP 相关文件全部移除 |
+| 仓库结构 | 三份变体 + `Wi-Fi修复-所需文件/`（含 767 MB 的 OCLP-Mod 安装包） | `EFI-Sequoia-78WW/` + `EFI-Tahoe-78WW/` 两份 EFI + 文档 + 检查脚本，OCLP 相关文件全部移除 |
 | SMBIOS | 含原机三码 | 清空占位，需自行生成 |
 
 ---
@@ -88,7 +88,7 @@
 | 睡眠 / 唤醒 | ⚠️ 未验证 | 未做长时间睡眠测试 |
 | 内屏亮度调节 | ✅ 已恢复（需 NVIDIA 驱动） | 固件 DSDT 里只有空的 `_BCM` 桩，常规 SSDT-PNLF 不适用；加 **`nvrmacpibl=1`** 后由 NullMoth 的 NVKMS 自己注册内屏背光，滑块与亮度键都可用。**必须装了 NullMoth 驱动才生效**，没装驱动时滑块仍然是灰的 |
 | NVIDIA 独显 | ⚠️ 不在本 EFI | 需单独安装 NullMoth（当前 **2.7.2**），注意 2.7.2 会与声卡冲突，见第 10 节 |
-| **macOS 26 Tahoe（`EFI-Tahoe/`）** | ✅ 可进桌面（需 NVIDIA 驱动才有正常帧率） | 实测能进系统；**未装 NullMoth 驱动时约 1–3 FPS**，装驱动后正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) |
+| **macOS 26 Tahoe（`EFI-Tahoe-78WW/`）** | ✅ 可进桌面（需 NVIDIA 驱动才有正常帧率） | 实测能进系统；**未装 NullMoth 驱动时约 1–3 FPS**，装驱动后正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) |
 | iServices | ⚠️ 需自行生成三码 | 发布包已清空 SMBIOS |
 
 ---
@@ -121,7 +121,7 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-11-09 更新，`_FIX31_20261109`）**：三份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX31_20261109`**（`EFI-Sequoia/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe/` 与 `EFI-Tahoe-83WW/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **Wi-Fi 7 多链路（MLO）** 与 5 GHz 回归：
+**本版驱动（2026-11-09 更新，`_FIX31_20261109`）**：三份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX31_20261109`**（`EFI-Sequoia-78WW/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **Wi-Fi 7 多链路（MLO）** 与 5 GHz 回归：
 
 - **MLO 加入不再崩固件**：连开启 MLO 的路由器时，认证前不再触发固件崩溃（它的 2.4 / 5 / 6 GHz 网络都受影响）；
 - **拿到 AP 的全部 link**：加入 MLD 时会主动索取该 AP 的所有链路，即使上次扫描没扫到也能找到，重连后同样有效；
@@ -228,7 +228,7 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 ## 4. 目录结构
 
 ```text
-├── EFI-Sequoia/
+├── EFI-Sequoia-78WW/
 │   └── EFI/                      ← macOS 15 用：直接把这个 EFI 目录整个拷到 ESP 根目录（不用改名）
 │       ├── BOOT/BOOTx64.efi
 │       └── OC/
@@ -240,7 +240,7 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 │           ├── Logs/             ← OpenCore 日志落盘目录（默认关闭，排错时再开）
 │           ├── config.plist      ← 当前配置（三码已清空，需自行填写）
 │           └── OpenCore.efi
-├── EFI-Tahoe/
+├── EFI-Tahoe-78WW/
 │   └── EFI/                      ← macOS 26 用：同样整个 EFI 拷到 ESP 根目录
 │       ├── BOOT/BOOTx64.efi
 │       └── OC/                   ← Tahoe 专用 kext（NMHDA / SimpleHDA / AW88399 25.x / AirportItlwm-Tahoe-BE200 / IntelBT 25x）
@@ -270,8 +270,8 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 
 1. **备份**你现在能启动的 EFI 到另一块盘或 U 盘。
 2. 按系统选一份，把对应的 **`EFI` 目录整个**复制到 FAT32 的 EFI 分区根目录（不用改名；**保留** `EFI/Microsoft`，否则 Windows 引导会丢）：
-   - macOS 15 → `EFI-Sequoia/EFI`
-   - macOS 26 + **BIOS 78WW** → `EFI-Tahoe/EFI`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
+   - macOS 15 → `EFI-Sequoia-78WW/EFI`
+   - macOS 26 + **BIOS 78WW** → `EFI-Tahoe-78WW/EFI`（先用 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md) 过一遍它的取舍与装驱动顺序）
    - macOS 26 + **BIOS 83WW** → `EFI-Tahoe-83WW/EFI`（差异见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)）
 3. 用 GenSMBIOS 生成 **`MacBookPro16,2`** 的三码：`SystemSerialNumber`、`MLB`、`SystemUUID`；
    `ROM` 填有线/无线网卡的 MAC（去掉分隔符，6 字节）。
@@ -298,11 +298,11 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 
 | BIOS | 用哪个 EFI | 触控板 | 雷电口 USB 3.2 | 说明 |
 | --- | --- | --- | --- | --- |
-| **78WW** | `EFI-Tahoe/EFI` | ✅ | ✅ | 靠 `DSDT.aml`（78WW 预打补丁，拆掉 `If (PCHA)`） |
+| **78WW** | `EFI-Tahoe-78WW/EFI` | ✅ | ✅ | 靠 `DSDT.aml`（78WW 预打补丁，拆掉 `If (PCHA)`） |
 | **83WW** | `EFI-Tahoe-83WW/EFI` | ✅ 已实测 | ✅ 已实测 | 不加载 DSDT；改用 `APIC-CPU24.aml` + 两条 PC02 补丁 + `TXHC` 5 口 |
 
 **两者不能混用**：
-- `EFI-Tahoe/`（78WW）放到 83WW 上 → 触控板消失、雷电口只剩 USB 2.0；
+- `EFI-Tahoe-78WW/`（78WW）放到 83WW 上 → 触控板消失、雷电口只剩 USB 2.0；
 - `EFI-Tahoe-83WW/` 放到 78WW 上 → **开不了机**：78WW 的 `If (PCHA)` 块里还包着 `UBTC` / `UCM` / `UCH` / `UBST` / `DGPB` / `DGPS` 这些设备，拆开后它们的 `_INI` 找不到 `UBSC`（Region）等依赖，刷一串 `AE_NOT_FOUND`（2026-11-09 实测）。
 
 > `EFI-Tahoe-83WW/` 是基于一份**已在 83WW 上实测可用**的同机型 EFI 整理的：去掉了它的核显驱动部分（`XeGfxIntelFB`、`SSDT-DGPU-HYB`、`-nmintelfboff` 等），保留本仓库的蓝牙 A2DP 修复。**2026-11-09 已在 83WW 上实机验证通过**（进桌面、触控板、雷电口 USB 3.2 正常）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
@@ -315,14 +315,14 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 
 > **2026-11-09 起默认「静默启动」：三份 EFI 的 `boot-args` 都去掉了 `-v`。** 实测去掉后开机明显变快（verbose 阶段要逐行往屏幕上画字，非常吃时间）。日常使用不需要 `-v`；**排错时再临时加回**（加一个 `-v` 即可，`keepsyms=1` 建议保留）。
 
-**macOS 15（`EFI-Sequoia/`）**
+**macOS 15（`EFI-Sequoia-78WW/`）**
 
 ```text
 keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ```
 
-**macOS 26（`EFI-Tahoe/`）** —— 多出来的 4 个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
+**macOS 26（`EFI-Tahoe-78WW/`）** —— 多出来的 4 个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
 
 ```text
 keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
@@ -338,7 +338,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 | `-btlfxa2dpcheck` | 启用 `BlueToolFixup` **FixA2DP** 的 A2DP 快连门控补丁（26 原来用的 BE200 实验版 `-btlfxbe200key` 已替换，两者只能二选一） |
 | （不加）`-nmhdaoff` | 只关 `NMHDA`（Lilu 插件），**对 macOS 26 的 `NMXAudio.kext` 无效**；加了只会丢 HDMI 音频，所以默认不加 |
 
-> **2026-10-31 蓝牙改动（26 包）**：`EFI-Tahoe/` 的 `BlueToolFixup` 从「BE200 stored-key 实验版（`-btlfxbe200key`，39,808 B）」换成「**FixA2DP 2.7.3（`-btlfxa2dpcheck`，42,464 B）**」，解决 AirPods 连上没声；
+> **2026-10-31 蓝牙改动（26 包）**：`EFI-Tahoe-78WW/` 的 `BlueToolFixup` 从「BE200 stored-key 实验版（`-btlfxbe200key`，39,808 B）」换成「**FixA2DP 2.7.3（`-btlfxa2dpcheck`，42,464 B）**」，解决 AirPods 连上没声；
 > 代价是丢掉 BE200 stored-key 那条实验补丁。回滚：把 `BlueToolFixup.kext` 换回旧版并把参数换回 `-btlfxbe200key`（仓库外的备份：`EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）。
 
 | 参数 | 作用 |
@@ -439,7 +439,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 ---
 
 - **2026-10-31 — 拆成 15 / 26 两份 EFI，Wi-Fi 升到 `_FIX24_20261030`**（当晚又升到 `_FIX26_20261031`，见下条）：
-  - 仓库结构改为 `EFI-Sequoia/`（macOS 15）+ `EFI-Tahoe/`（macOS 26）；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全一致，只有 **Wi-Fi、蓝牙、声卡（AppleHDA）这几组 kext 和 boot-args 按系统版本不同**；
+  - 仓库结构改为 `EFI-Sequoia-78WW/`（macOS 15）+ `EFI-Tahoe-78WW/`（macOS 26）；两份的 ACPI / Booter / DeviceProperties / USB 图 / SMBIOS 完全一致，只有 **Wi-Fi、蓝牙、声卡（AppleHDA）这几组 kext 和 boot-args 按系统版本不同**；
   - **macOS 26 实测可以进桌面**：未装 NVIDIA 驱动时约 **1–3 FPS**（软件帧缓冲），装完 NullMoth 驱动正常；详见 [README-macOS26-Tahoe.md](README-macOS26-Tahoe.md)；
   - Wi-Fi 两套都换到 **2.4.0 `_FIX24_20261030`**（`AirportItlwm-Sequoia-BE200` / `AirportItlwm-Tahoe-BE200`）：国家码/监管域优先级与授权状态、RNR→6 GHz 定向探测、多链路信道与带宽校验、关闭 Wi-Fi 后的 RX 中断队列；
   - **明确：macOS 15 不支持 Wi-Fi 7（EHT/802.11be）**，驱动只到 802.11ax；26 上 EHT/MLO 仍为公测、未实测；
@@ -483,7 +483,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 - **2026-11-06 — 更正：`-nmhdaoff` 对 `NMXAudio.kext` 无效，已在 EFI 中移除**：
   - 一度以为加 `-nmhdaoff` 就能让 `SimpleHDA` 拿回 HDA 路径，实测**无效**：该参数是 `NMHDA`（Lilu 插件）的开关，而 macOS 26 上顶掉声卡的是 `NMXAudio.kext`（FreeBSD `snd_hda` 的 XNU 移植，非 Lilu 插件，不解析 Lilu 参数）；
-  - 已把 `-nmhdaoff` 从 `EFI-Tahoe/` 的 `boot-args` 移除（留着只会白丢 NVIDIA HDMI/DP 音频）；
+  - 已把 `-nmhdaoff` 从 `EFI-Tahoe-78WW/` 的 `boot-args` 移除（留着只会白丢 NVIDIA HDMI/DP 音频）；
   - **26 上的可靠做法仍是删除/阻止 `/Library/Extensions/NMXAudio.kext`**：`sudo rm -rf /Library/Extensions/NMXAudio.kext && sudo kmutil install --update-all`，重启后恢复（每次更新 NVIDIA 驱动后需复查）；
   - 影响对照：外放/耳机（ALC287 + 双 AW88399，layout 13）正常；NVIDIA HDMI/DP 音频可用（NMHDA 保留启用）；显卡/亮度/Wi-Fi/蓝牙不受影响。
 
@@ -500,7 +500,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 
 - **2026-11-09 — 三份 EFI 默认去掉 `-v`（静默启动，开机变快）**：
   - 实测同一份 83WW EFI，只去掉 `-v` 其它不变，**开机速度明显提升**（verbose 阶段逐行渲染文字本身很耗时）；
-  - `EFI-Sequoia/`、`EFI-Tahoe/`、`EFI-Tahoe-83WW/` 三份的 `boot-args` 全部移除 `-v`，其余参数不动（`keepsyms=1` 保留）；
+  - `EFI-Sequoia-78WW/`、`EFI-Tahoe-78WW/`、`EFI-Tahoe-83WW/` 三份的 `boot-args` 全部移除 `-v`，其余参数不动（`keepsyms=1` 保留）；
   - 排错时再加回 `-v` 即可；文档里的启动参数块同步更新。
 
 ---

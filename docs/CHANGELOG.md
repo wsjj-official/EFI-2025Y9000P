@@ -5,7 +5,7 @@
 - 背景：**BIOS 83WW + macOS 26 + 未装 NVIDIA 驱动 = 黑屏只剩光标**。26 上排除了 `IONDRVSupport`
   之后没有可用的合成后端（Apple 的通用加速器 `IOVersatile` 依赖 Apple Silicon 的 DCP，x86_64 上加载不了），
   所以"先点亮桌面再装驱动"这条路在 26 上走不通；15 上通用帧缓冲仍然可用，没有驱动也能进桌面（1–3 FPS）。
-- 新增目录 `EFI-Sequoia-83WW/EFI`：以 `EFI-Sequoia/` 为基线，`ACPI/` 换成 83WW 配方
+- 新增目录 `EFI-Sequoia-83WW/EFI`：以 `EFI-Sequoia-78WW/` 为基线，`ACPI/` 换成 83WW 配方
   （无 `DSDT.aml`、`APIC-CPU24.aml`、`ACPI>Delete` 丢 `DMAR` 并替换 856 字节 `APIC`、10 条 `ACPI>Patch` 含两条 `PC02`），
   `UTBMap`/`USBToolBox` 换成 83WW 端口表（`TXHC` 5 口），`boot-args` 追加 `TSC_sync_margin=0`（配 `CpuTscSync`）。
 - `Kernel>Block` 只有 `AppleEthernetRL`（**不排除** `IONDRVSupport`）—— 这是"无驱动也能出慢桌面"的前提。

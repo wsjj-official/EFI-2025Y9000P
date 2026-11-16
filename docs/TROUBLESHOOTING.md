@@ -8,7 +8,7 @@
 
 ### 1.0 先确认 BIOS 版本：78WW 与 83WW 要用不同的 EFI
 
-| 症状 | 78WW + `EFI-Tahoe/` | 83WW + `EFI-Tahoe-83WW/` | 混用（78WW + 83WW 配方） |
+| 症状 | 78WW + `EFI-Tahoe-78WW/` | 83WW + `EFI-Tahoe-83WW/` | 混用（78WW + 83WW 配方） |
 | --- | --- | --- | --- |
 | 能进桌面 | ✅ | ✅（2026-11-09 实测） | ❌ 卡在 `\_SB.UBTC._INI` |
 | 内建触控板（`ioreg` 查 `TPD0`） | ✅ | ✅（实测） | ❌ |
@@ -18,7 +18,7 @@
 **判断方法**：触控板与外放是一对连体指标（都挂在 `\_SB.PC02` 下）——两者同时好 = `PC02` 就位；两者同时坏 = `PC02` 没打开。
 
 **处理**：
-- 78WW → 用 `EFI-Tahoe/EFI`（靠 `DSDT.aml`）；
+- 78WW → 用 `EFI-Tahoe-78WW/EFI`（靠 `DSDT.aml`）；
 - 83WW → 用 `EFI-Tahoe-83WW/EFI`（无 DSDT + `APIC-CPU24` + 两条 PC02 补丁 + `TXHC` 5 口）；
 - 两套**不能互换**，原因与细节见 [BIOS 版本对照](BIOS-VERSIONS.md)。
 
@@ -300,7 +300,7 @@ kmutil showloaded | grep -i itlwm
 4. `IntelBluetoothFirmware` / `IntelBTPatcher` **保持原版**，不要为了这个补丁一起换版本。
 5. 回退：换回原版 `BlueToolFixup` 2.7.3（acidanthera/BrcmPatchRAM），并从 boot-args 删掉 `-btlfxa2dpcheck`。
 
-**macOS 26 补充（2026-10-31）**：`EFI-Tahoe/` 原来用的是「BE200 stored-key 实验版」`BlueToolFixup`（39,808 B，配 `-btlfxbe200key`），这份**没有** A2DP 补丁；现在已换成 FixA2DP 版并把参数改成 `-btlfxa2dpcheck`。
+**macOS 26 补充（2026-10-31）**：`EFI-Tahoe-78WW/` 原来用的是「BE200 stored-key 实验版」`BlueToolFixup`（39,808 B，配 `-btlfxbe200key`），这份**没有** A2DP 补丁；现在已换成 FixA2DP 版并把参数改成 `-btlfxa2dpcheck`。
 
 - 两个补丁（A2DP 快连门控 / BE200 stored-key）是两条分支，目前**没有合并版**，只能二选一；
 - 如果换成 FixA2DP 后 26 上蓝牙打不开 / 连不上，说明这台机器需要 BE200 stored-key 那条：换回旧 `BlueToolFixup.kext` 并把参数改回 `-btlfxbe200key`（备份在仓库外 `EFI/_backup-bluetooth/BlueToolFixup-BE200-Darwin25-20261016.kext`）；

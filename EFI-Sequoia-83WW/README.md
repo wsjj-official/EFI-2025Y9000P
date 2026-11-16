@@ -1,6 +1,6 @@
 # EFI-Sequoia-83WW — macOS 15 Sequoia + BIOS 83WW
 
-这份是 **`EFI-Sequoia/`（macOS 15）与 `EFI-Tahoe-83WW/`（BIOS 83WW 的 ACPI 配方）的组合**，
+这份是 **`EFI-Sequoia-78WW/`（macOS 15）与 `EFI-Tahoe-83WW/`（BIOS 83WW 的 ACPI 配方）的组合**，
 用来解决一个具体场景：
 
 > **BIOS 83WW + macOS 26 + 未装 NVIDIA 驱动 = 黑屏只剩光标。**
@@ -17,9 +17,9 @@
 5. 升级完**换回 [`EFI-Tahoe-83WW/`](../EFI-Tahoe-83WW/)**，并在 26 上**重跑一次 `install.sh`**
    （15 装的是 15 的 `NVAccel`，26 需要 26 的，否则"驱动加载成功但桌面全黑"）。
 
-## 与 `EFI-Sequoia/` 的差异
+## 与 `EFI-Sequoia-78WW/` 的差异
 
-| 项目 | `EFI-Sequoia/`（78WW） | 本目录（83WW） |
+| 项目 | `EFI-Sequoia-78WW/`（78WW） | 本目录（83WW） |
 | --- | --- | --- |
 | `ACPI/` | 注入 `DSDT.aml` + 9 个 SSDT | **无 DSDT**；`APIC-CPU24.aml` + 9 个 SSDT |
 | `ACPI > Delete` | 只丢 `DMAR` | 丢 `DMAR` + **替换 856 字节 APIC** |
@@ -28,7 +28,7 @@
 | `boot-args` | — | 追加 **`TSC_sync_margin=0`**（配 `CpuTscSync`，83WW 关 VT-d 时避免 `Non-monotonic time`） |
 | `Kernel > Block` | 只有 `AppleEthernetRL` | 同左（**没有** `IONDRVSupport`，这是无驱动也能出画面的前提） |
 
-其余（kext 集合、`Booter`/`UEFI` quirks、`DeviceProperties`、SMBIOS）与 `EFI-Sequoia/` 一致。
+其余（kext 集合、`Booter`/`UEFI` quirks、`DeviceProperties`、SMBIOS）与 `EFI-Sequoia-78WW/` 一致。
 
 ## 两个 config
 
