@@ -280,6 +280,38 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 6. 进 OpenCore 先执行一次 **`Reset NVRAM`**，再选 macOS。
 7. 进系统后跑 `bash tools/check-audio.sh` 确认声卡链路。
 
+### 5.1 macOS 26 首次安装：没装 NVIDIA 驱动时，用 `tools/finish-setup.sh` 跳过设置界面
+
+**症状**：26 上还没装 NVIDIA 驱动时，第一屏设置界面（语言选择 / Setup Assistant）画不出来——屏幕全黑、只有一个能动
+的光标；而驱动只能在系统跑起来之后才装得上，形成死循环。
+
+**做法**（2026-11-17 实测，BIOS 83WW + 26.x）：
+
+1. 装机完成后，开机进 **Recovery**（OpenCore 菜单里可见）→ 实用工具 → 终端；
+2. 确认 1401 的 U 盘挂着，执行：
+
+   ```sh
+   sh "/Volumes/1401/NullMoth/finish-setup.sh"
+   ```
+
+   也可以直接用本仓库的这份：`sh "/Volumes/<U盘>/tools/finish-setup.sh"`。
+
+3. 脚本会交互式问账号名 / 全名 / 密码，然后：
+   - 在目标卷的 `dslocal` 里建一个 **管理员** 账号（UID 501），建家目录；
+   - 默认写入 `kcpassword` + `autoLoginUser`（**自动登录**，跳过同样画不出来的登录窗口）；
+   - `touch .AppleSetupDone` 把"设置已完成"标记上。
+4. `reboot`，正常启动 → 会进剩余的配置界面 → 然后进桌面。**此时仍然很卡（约 1–3 FPS），这是正常的**：
+   仍然只有固件帧缓冲在推像素。
+5. 在桌面直接用 **1401 Mac app** 装 NullMoth，重启后恢复正常帧率。
+
+**回退 / 注意**
+
+- 不想要自动登录：加 `--no-autologin`（登录窗口若也是黑的，就点屏幕中间 → 输密码 → 回车）；
+- 装好驱动后到「系统设置 → 用户与群组 → 自动登录」关掉，并删掉 `/private/etc/kcpassword`；
+- 自动登录会把密码以可逆形式写到盘上（`kcpassword`），共享机器不要开；
+- 脚本对"已经有账号 / 已经 `.AppleSetupDone`"的系统会直接退出，不会动任何东西；
+- 这份脚本来自 1401 工具链，仓库里的副本与 1401 盘中那份相同，方便直接取用。
+
 ---
 
 ## 6. BIOS 设置

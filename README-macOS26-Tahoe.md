@@ -169,6 +169,35 @@ NullMoth 驱动自己的文档给了几条硬事实（[README](https://github.co
 > **要么**让 app 装完驱动后，把它的改动和我这份 `config.plist` 对一下（差的也就是那条 `IONDRVSupport` 和 `csr`）。
 > 它每次改之前会备份，出问题能退回去。
 
+### 步骤 2.5：还没装驱动、设置界面又画不出来时——用 `tools/finish-setup.sh` 先造账号
+
+**症状**：全新装好的 26，第一屏设置界面（语言选择 / Setup Assistant）黑屏，只有光标；驱动要进系统才装得上。
+
+**2026-11-17 实测可用的绕法**（BIOS 83WW + 26.x）：
+
+1. 开机进 **Recovery** → 实用工具 → 终端；
+2. 执行（U 盘里 1401 那份或本仓库这份都行）：
+
+   ```sh
+   sh "/Volumes/1401/NullMoth/finish-setup.sh"
+   # 或
+   sh "/Volumes/<U盘>/tools/finish-setup.sh"
+   ```
+
+3. 按提示输入账号名 / 全名 / 密码；脚本会建管理员账号（UID 501）、写自动登录、并打上 `.AppleSetupDone`；
+4. `reboot` → 正常启动会走完剩余配置界面 → 进桌面。**这时仍然只有 1–3 FPS**（固件帧缓冲在推像素）；
+5. 在桌面用 1401 Mac app 装 NullMoth → 重启后恢复正常帧率，再把自动登录关掉：
+
+   ```sh
+   sudo rm -f /private/etc/kcpassword
+   ```
+
+   并在「系统设置 → 用户与群组 → 自动登录」里选「关闭」。
+
+> 不想自动登录就加 `--no-autologin`；登录窗口也是同一个缺失驱动在画，必要时点屏幕中间盲输密码回车。
+> 脚本对已有账号 / 已有 `.AppleSetupDone` 的系统直接退出，不会改动任何东西。
+
+
 ### 步骤 3：先跑一次诊断启动
 
 1. 把 `EFI-macOS26-Tahoe-NoNVIDIA\EFI` 复制到 EFI 分区根目录（保留 `EFI\Microsoft`，否则 Windows 引导会丢）。

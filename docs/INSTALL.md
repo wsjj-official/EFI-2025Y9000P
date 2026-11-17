@@ -157,6 +157,31 @@ EFI/
 - 确认没有把 `EFI/Microsoft` 覆盖掉；
 - 用你备份的原 EFI 启动，或进 macOS Recovery/Windows 恢复。
 
+### 5.2 macOS 26 全新安装、还没装 NVIDIA 驱动时（设置界面黑屏）
+
+26 上没装 NVIDIA 驱动时，第一屏设置界面画不出来（黑屏 + 光标），而驱动要进系统才装得上。
+用 `tools/finish-setup.sh` 先造好账号并标记设置完成，就能跳过这些界面：
+
+```sh
+# 开机进 Recovery → 实用工具 → 终端
+sh "/Volumes/<U盘>/tools/finish-setup.sh"
+# 或 1401 盘里的那份
+sh "/Volumes/1401/NullMoth/finish-setup.sh"
+```
+
+按提示输入账号名 / 全名 / 密码。脚本会：
+
+- 在目标卷建一个**管理员**账号（UID 501）和家目录；
+- 默认写 `kcpassword` + `autoLoginUser`（自动登录，连登录窗口都不用画）；
+- `touch .AppleSetupDone`。
+
+重启后正常启动即进入桌面（**仍然 1–3 FPS，正常现象**），在那里用 1401 Mac app 装驱动。
+装好后到「系统设置 → 用户与群组 → 自动登录」关掉自动登录，并 `sudo rm -f /private/etc/kcpassword`。
+
+> - 不要自动登录：加 `--no-autologin`；
+> - 脚本对已有账号或已有 `.AppleSetupDone` 的系统会直接退出；
+> - 自动登录会把密码以可逆形式写到盘上，共享机器别开。
+
 ---
 
 ## 6. 进入系统后的检查
