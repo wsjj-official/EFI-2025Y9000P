@@ -1,16 +1,16 @@
 # 变更记录
 
-## 2026-11-17 — 新增 `tools/finish-setup.sh`：没驱动时跳过 26 的设置界面
+## 2026-11-17 — 新增 `finish-setup.sh`：没驱动时跳过 26 的设置界面
 
 - 现象：macOS 26 全新安装、还没装 NVIDIA 驱动时，语言选择 / Setup Assistant 画不出来（黑屏 + 光标），
   而驱动只能在系统跑起来之后装，形成死循环。
-- 新增 `tools/finish-setup.sh`（来自 1401 工具链，内容与 1401 盘里那份一致）：
+- 新增 `finish-setup.sh`（来自 1401 工具链，内容与 1401 盘里那份一致）：
   - 自动定位 `Role: Data` 的目标卷（中文卷名也可），必要时自己挂载；
   - 用 `dscl` 建 **管理员** 账号（UID 501）+ 家目录；
   - 默认写 `kcpassword` + `autoLoginUser`（自动登录），跳过同样画不出来的登录窗口；
   - `touch .AppleSetupDone`，让下次启动直接进桌面；
   - 对已有账号或已 `.AppleSetupDone` 的系统直接退出，不改动任何东西；`dscl` 失败会回滚已建的账号。
-- 用法：`sh "/Volumes/<U盘>/tools/finish-setup.sh"`（Recovery → 终端），按提示输入账号与密码，重启。
+- 用法：`sh "/Volumes/<U盘>/finish-setup.sh"`（Recovery → 终端），按提示输入账号与密码，重启。
 - 2026-11-17 实测（BIOS 83WW + macOS 26）：建号 → 重启 → 走完剩余配置界面 → 进桌面（**1–3 FPS**，
   固件帧缓冲在推像素）→ 在桌面用 1401 Mac app 装 NullMoth → 恢复正常帧率。
 - 文档同步：`README.md` §5.1、`README-macOS26-Tahoe.md` 步骤 2.5、`docs/INSTALL.md` §5.2。

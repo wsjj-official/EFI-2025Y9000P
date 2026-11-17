@@ -160,11 +160,11 @@ EFI/
 ### 5.2 macOS 26 全新安装、还没装 NVIDIA 驱动时（设置界面黑屏）
 
 26 上没装 NVIDIA 驱动时，第一屏设置界面画不出来（黑屏 + 光标），而驱动要进系统才装得上。
-用 `tools/finish-setup.sh` 先造好账号并标记设置完成，就能跳过这些界面：
+用 `finish-setup.sh` 先造好账号并标记设置完成，就能跳过这些界面：
 
 ```sh
 # 开机进 Recovery → 实用工具 → 终端
-sh "/Volumes/<U盘>/tools/finish-setup.sh"
+sh "/Volumes/<U盘>/finish-setup.sh"
 # 或 1401 盘里的那份
 sh "/Volumes/1401/NullMoth/finish-setup.sh"
 ```

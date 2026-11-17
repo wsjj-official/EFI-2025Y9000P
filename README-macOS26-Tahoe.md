@@ -169,7 +169,7 @@ NullMoth 驱动自己的文档给了几条硬事实（[README](https://github.co
 > **要么**让 app 装完驱动后，把它的改动和我这份 `config.plist` 对一下（差的也就是那条 `IONDRVSupport` 和 `csr`）。
 > 它每次改之前会备份，出问题能退回去。
 
-### 步骤 2.5：还没装驱动、设置界面又画不出来时——用 `tools/finish-setup.sh` 先造账号
+### 步骤 2.5：还没装驱动、设置界面又画不出来时——用 `finish-setup.sh` 先造账号
 
 **症状**：全新装好的 26，第一屏设置界面（语言选择 / Setup Assistant）黑屏，只有光标；驱动要进系统才装得上。
 
@@ -181,7 +181,7 @@ NullMoth 驱动自己的文档给了几条硬事实（[README](https://github.co
    ```sh
    sh "/Volumes/1401/NullMoth/finish-setup.sh"
    # 或
-   sh "/Volumes/<U盘>/tools/finish-setup.sh"
+   sh "/Volumes/<U盘>/finish-setup.sh"
    ```
 
 3. 按提示输入账号名 / 全名 / 密码；脚本会建管理员账号（UID 501）、写自动登录、并打上 `.AppleSetupDone`；

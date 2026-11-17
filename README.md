@@ -280,7 +280,7 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 6. 进 OpenCore 先执行一次 **`Reset NVRAM`**，再选 macOS。
 7. 进系统后跑 `bash tools/check-audio.sh` 确认声卡链路。
 
-### 5.1 macOS 26 首次安装：没装 NVIDIA 驱动时，用 `tools/finish-setup.sh` 跳过设置界面
+### 5.1 macOS 26 首次安装：没装 NVIDIA 驱动时，用 `finish-setup.sh` 跳过设置界面
 
 **症状**：26 上还没装 NVIDIA 驱动时，第一屏设置界面（语言选择 / Setup Assistant）画不出来——屏幕全黑、只有一个能动
 的光标；而驱动只能在系统跑起来之后才装得上，形成死循环。
@@ -294,7 +294,7 @@ kextstat | grep -i bluetoolfixup                        # 应加载
    sh "/Volumes/1401/NullMoth/finish-setup.sh"
    ```
 
-   也可以直接用本仓库的这份：`sh "/Volumes/<U盘>/tools/finish-setup.sh"`。
+   也可以直接用本仓库的这份：`sh "/Volumes/<U盘>/finish-setup.sh"`。
 
 3. 脚本会交互式问账号名 / 全名 / 密码，然后：
    - 在目标卷的 `dslocal` 里建一个 **管理员** 账号（UID 501），建家目录；
