@@ -1,5 +1,19 @@
 # 变更记录
 
+## 2026-11-20 — 15 的两份 EFI 换上「隔空投送尝鲜版」Wi-Fi 驱动
+
+- 驱动：`AirportItlwm.kext`（Eric-AirportItlwm 社区测试 `1a8d398`，2.4.0 Debug，`com.zxystd.AirportItlwm`），
+  替换原来的 `AirportItlwm-Sequoia-BE200.kext`；`Kernel > Add` 条目同步改名，`MinKernel 24.2.0` / `MaxKernel 24.99.99`。
+  影响范围：`EFI-Sequoia-78WW/` 与 `EFI-Sequoia-83WW/` 两份；26 的两份不变（仍是 `AirportItlwm-Tahoe-BE200`）。
+- boot-args：**移除 `itlwm_he=1`**（这版默认开 HE），**新增 `-itlawdl`**（打开 AWDL）。
+  不要加 `-itlawdlllw`（AWDL 低延迟，上游默认关，曾出过 `wifip2pd` 内核 panic）；不要加 `-itlawdlstanding`（常驻链路实验开关）。
+- 能力边界（社区实测 + 交接文档）：
+  - **只支持 iPhone → Mac**；Mac → iPhone 会停在 `SYN_SENT`（常驻链路发送不完成）；
+  - **速度很慢**：ROC 模式 2.4 GHz 约 60 KB/s（1.5 MB 照片、20 MB 传输都是这个量级）；
+  - **必须用 2.4 GHz** 测；5 GHz 主站下 ROC 窗口与对端 AW 对不上，搜不到设备；
+  - 已知仍需「关开一次 Wi-Fi」才能被 iPhone 扫到；「Mac 看不到 iPhone / 传完就消失」是已知现象。
+- 文档：`README.md` 增加「隔空投送尝鲜版」说明块（能力边界与开关），并更新了 kext 名称与 HE 相关表述。
+
 ## 2026-11-17 — 新增 `finish-setup.sh`：没驱动时跳过 26 的设置界面
 
 - 现象：macOS 26 全新安装、还没装 NVIDIA 驱动时，语言选择 / Setup Assistant 画不出来（黑屏 + 光标），

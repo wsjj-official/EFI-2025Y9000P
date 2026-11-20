@@ -971,9 +971,9 @@
 				<key>Arch</key>
 				<string>x86_64</string>
 				<key>BundlePath</key>
-				<string>AirportItlwm-Sequoia-BE200.kext</string>
+				<string>AirportItlwm.kext</string>
 				<key>Comment</key>
-				<string>macOS 15.2+ BE200 Sequoia build 2.4.0_FIX31_20261109 (Wi-Fi 7 MLO: crash-free join, all-links query, 6GHz WPA3+WPA2 link pairing; WPA2/WPA3 SHA256-PSK; 5GHz A-MSDU fix); 8086:272B match</string>
+				<string>Eric-AirportItlwm 尝鲜版 1a8d398（隔空投送 iPhone→Mac / 速度很慢）</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -1534,7 +1534,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck</string>
+				<string>keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 -btlfxa2dpcheck -itlawdl</string>
 				<key>csr-active-config</key>
 				<data>
 				QwoAAA==

@@ -12,13 +12,14 @@
 | [`EFI-Sequoia-83WW/EFI/`](EFI-Sequoia-83WW/EFI) | **macOS 15 Sequoia**（15.2+） | **83WW** | 2026-11-16 新增：`EFI-Sequoia` 的 kext/boot-args + **83WW 的 ACPI 配方**（`APIC-CPU24` + 两条 PC02 + `TXHC` 5 口）；**未装 NVIDIA 驱动也能进桌面（1–3 FPS）**，用于"先装驱动再升级到 26"的过渡步骤 |
 
 > 四份都套在各自的 `EFI/` 目录里（`EFI-Sequoia-78WW/EFI/`、`EFI-Tahoe-78WW/EFI/`、`EFI-Tahoe-83WW/EFI/`、`EFI-Sequoia-83WW/EFI/`），**直接把这个 `EFI` 目录整个拷到 ESP 根目录即可，不用改名**（覆盖同名 `EFI`，但保留 `EFI\Microsoft`，否则 Windows 引导会丢）。
-> **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm-Sequoia-BE200`，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
+> **不要混拷**：① 系统维度——Wi-Fi / 蓝牙 kext 分系统版本（15 用 `AirportItlwm.kext`「隔空投送尝鲜版」，26 用 `AirportItlwm-Tahoe-BE200`）；② **BIOS 维度——`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/` 不能互换**，前者依赖 78WW 的预打补丁 DSDT，后者的 ACPI 补丁只对 83WW 成立。
 >
 > **⚠️ BIOS 版本**：**78WW 用 `EFI-Tahoe-78WW/`（或 `EFI-Sequoia-78WW/`）；83WW 用 `EFI-Tahoe-83WW/`（或 `EFI-Sequoia-83WW/`）**。混用会导致开不了机（83WW 配方在 78WW 上会卡在 `\_SB.UBTC._INI` 的 `AE_NOT_FOUND` 连锁，2026-11-09 实测）。详见 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)。
 
 **这一版做成了这几件事：**
 
-1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0 `_FIX31_20261109`** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
+1. **Wi-Fi 打通** —— Intel BE200（`8086:272b`），`AirportItlwm` **2.4.0** 直接注入，**不需要 OCLP / 根补丁 / IOSkywalk 回移植**；WPA3-Personal（SAE/H2E）实测可用；
+   **隔空投送（尝鲜）**：`-itlawdl` 打开 AWDL，**只支持 iPhone → Mac，速度约 60 KB/s**，详见下面的「隔空投送尝鲜版」说明；
 2. **外放修好** —— Realtek ALC287 + 两颗 Awinic AW88399 智能功放（高音 + 低音同时工作，音量/静音正常）；
 3. **蓝牙 A2DP 修复** —— AirPods 等设备「能连上、放歌没声 / 断一下就没声」已修（`BlueToolFixup` FixA2DP + `-btlfxa2dpcheck`）；
 4. **内屏亮度** —— `nvrmacpibl=1`，由 NullMoth NVKMS 注册背光（需装 NVIDIA 驱动）；
@@ -74,7 +75,7 @@
 | OpenCore 启动 / macOS 15.8 | ✅ 已验证 | 本 EFI 即实机导出配置 |
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
-| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm-Sequoia-BE200 2.4.0 _FIX31_20261109`，**无需 OCLP 根补丁**；HE/Wi-Fi 6 由 `itlwm_he=1` 开启；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
+| Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm.kext`（尝鲜版 `1a8d398`，2.4.0），**无需 OCLP 根补丁**；HE/Wi-Fi 6 **默认开启**（不再需要 `itlwm_he=1`）；**隔空投送仅 iPhone→Mac 且速度很慢**；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
@@ -104,7 +105,7 @@
 - `csr-active-config = 0xFF0F0000`；
 - **系统侧再装 OCLP-Mod 3.1.9 打 `Post-Install Root Patch`**（替换 `wifip2pd`、合并 `IO80211.framework`）。
 
-**现在的做法**：`AirportItlwm-Sequoia-BE200.kext` **2.4.0**（`com.zxystd.AirportItlwm`，`IOPCIMatch` 含 `0x272B8086`）直接注入，其余一概不需要：
+**现在的做法**：`AirportItlwm.kext`（尝鲜版 `1a8d398`）**2.4.0**（`com.zxystd.AirportItlwm`，`IOPCIMatch` 含 `0x272B8086`）直接注入，其余一概不需要：
 
 | 项目 | 旧版 | 本版 |
 | --- | --- | --- |
@@ -121,20 +122,20 @@ system_profiler SPAirPortDataType | head -30
 wdutil info                                 # SSID / BSSID / RSSI / 信道
 ```
 
-**本版驱动（2026-11-09 更新，`_FIX31_20261109`）**：三份 EFI 的 Wi-Fi 驱动都换到 **2.4.0 `_FIX31_20261109`**（`EFI-Sequoia-78WW/` 用 `AirportItlwm-Sequoia-BE200`，`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/` 用 `AirportItlwm-Tahoe-BE200`）。这一版主要修 **Wi-Fi 7 多链路（MLO）** 与 5 GHz 回归：
+**本版驱动（2026-11-20 更新）**：**两份 15（Sequoia）的 Wi-Fi 驱动换成了「隔空投送尝鲜版」`1a8d398`**（`AirportItlwm.kext`，`com.zxystd.AirportItlwm` 2.4.0 Debug）；26 的两份仍是 `AirportItlwm-Tahoe-BE200`。`_FIX31_20261109` 那一版的 MLO / 5 GHz / 6 GHz 修复都还在，新增的是 AWDL（隔空投送）这条链路。
 
-- **MLO 加入不再崩固件**：连开启 MLO 的路由器时，认证前不再触发固件崩溃（它的 2.4 / 5 / 6 GHz 网络都受影响）；
-- **拿到 AP 的全部 link**：加入 MLD 时会主动索取该 AP 的所有链路，即使上次扫描没扫到也能找到，重连后同样有效；
-- **6 GHz 的 WPA3-only 链路**可以和同一路由器的 WPA2/WPA3 链路一起使用；
-- **WPA2/WPA3 过渡网络**：同时提供 SHA256-PSK 的网络现在也接受普通 WPA2-PSK；
-- **修掉 Fix30 的 5 GHz 掉线**：发送 A-MSDU 帧改成固件期望的方式，不再触发固件错误与随之而来的复位；
-- 保留 Fix30 的 A-MSDU 聚合、320 MHz 主信道上报、TID-to-link 映射；以及 Fix29 的 6 GHz SSID/Multiple-BSSID 解析。
+> ⚠️ **隔空投送尝鲜版的能力边界（实测）**
+>
+> - **只支持 iPhone → Mac**（iPhone 发、Mac 收）。Mac → iPhone 不行：常驻监听链路的发送不完成，SYN 停在 `SYN_SENT`。
+> - **速度很慢**：ROC 模式下 2.4 GHz 约 **60 KB/s**（传 1.5 MB 的照片几十秒；20 MB 的传输实测也是这个量级）。
+> - **必须用 2.4 GHz 测**。5 GHz 主站（如 ch157）下 ROC 窗口跳 6，和 iPhone 的 AW 对不上，搜不到设备。
+> - 已知还要"关开一次 Wi-Fi"才能被 iPhone 扫到；"Mac 看不到 iPhone / 传完就消失"也是已知现象。
+> - 开关：boot-args 里 **`-itlawdl`** 打开 AWDL；`-itlawdlllw`（AWDL 低延迟）**默认不要加**（上游也默认关，曾经在这条路径上出过 `wifip2pd` 内核 panic）；`-itlawdlstanding` 是"恢复常驻链路"的实验开关，同样别加。
+> - 想要稳定省心的普通 Wi-Fi：把 `-itlawdl` 去掉即可，其余行为不变。
 
-**开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
+**HE / Wi-Fi 6 / 6 GHz**：这版驱动**默认开启 HE**，不再需要 boot-args；旧的 `itlwm_he=1` 已从两份 15 的配置里移除（驱动仍认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数，需要时再加）。
 
-**开启 HE / Wi-Fi 6 / 6 GHz**：需要 boot-args 增加 `itlwm_he=1`（驱动只认 `itlwm_he`、`itlwm_cc`、`itlwm_tsleep` 三个参数；`itlwm_he=1` 打开 802.11ax 能力，6 GHz 的 HE 能力集也挂在这条路径上）。本版已加进 `config.plist`。
-
-**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。本包的 `_FIX31_20261109` 构建就出自这个分支（`AirportItlwm-Sequoia` / `AirportItlwm-Tahoe` 两个 target，分别对应 15.2+ 和 26.x）。想跟进最新修复或自己编译，直接看那个仓库。
+**驱动来源**：[**Ersiter/AirportItlwm-BE200**](https://github.com/Ersiter/AirportItlwm-BE200) —— BE200 的专用分支，目前仍在**内测阶段**，还没有合并进 `OpenIntelWireless/itlwm` 主仓库，也没有对应的正式 release，所以上游仓库看起来"没更新"是正常的。
 
 > **连接建议（2026-10-30 更新）：WPA3-Personal（SAE）已实测可用**，可以直接用 H2E 的 WPA3 热点。
 >
@@ -234,7 +235,7 @@ kextstat | grep -i bluetoolfixup                        # 应加载
 │       └── OC/
 │           ├── ACPI/             ← DSDT + 9 个 SSDT（与 26 共用同一套）
 │           ├── Drivers/          ← HfsPlus / OpenRuntime / ResetNvramEntry / OpenCanopy
-│           ├── Kexts/            ← 28 个 kext bundle（含 AirportItlwm-Sequoia-BE200、AW88399Driver）
+│           ├── Kexts/            ← 28 个 kext bundle（含 AirportItlwm「尝鲜版」、AW88399Driver）
 │           ├── Resources/        ← OpenCanopy 图标/字体/语音
 │           ├── Tools/            ← NullMothSafe.efi
 │           ├── Logs/             ← OpenCore 日志落盘目录（默认关闭，排错时再开）

@@ -6,7 +6,7 @@
 >
 > | 目录 | 目标系统 | 差异 |
 > | --- | --- | --- |
-> | `EFI-Sequoia-78WW/` | macOS 15.2+ | Wi-Fi 用 `AirportItlwm-Sequoia-BE200`；蓝牙用 `IntelBluetoothFirmware 2.5.0` + `IntelBTPatcher 2.5.0`；`boot-args` 无 `gfxrst=4` / `-ibtcompatbeta` |
+> | `EFI-Sequoia-78WW/` | macOS 15.2+ | Wi-Fi 用 `AirportItlwm.kext`（尝鲜版 1a8d398，含隔空投送 iPhone→Mac）；蓝牙用 `IntelBluetoothFirmware 2.5.0` + `IntelBTPatcher 2.5.0`；`boot-args` 无 `gfxrst=4` / `-ibtcompatbeta` |
 > | `EFI-Tahoe-78WW/` | macOS 26.4+ | Wi-Fi 用 `AirportItlwm-Tahoe-BE200`；蓝牙用 `IntelBluetoothFirmware 2.5.1` + `IntelBTPatcher-BE200-25x`；多 `SimpleHDA` / `NMHDA`；`boot-args` 多 `gfxrst=4`、`-ibtcompatbeta`、`-btlfxbe200key`；`Kernel>Block` 多一条 `IONDRVSupport`（NullMoth 要求） |
 >
 > 其余（ACPI 10 张表、Booter、DeviceProperties、PlatformInfo、USB 图）两份**完全一致**。
@@ -209,7 +209,7 @@ EFI/
 19 UTBMap
 20 VoodooI2CServices
 21 VoodooGPIO
-22 AirportItlwm-Sequoia-BE200
+22 AirportItlwm（尝鲜版）
 23 VoodooI2C
 24 VoodooInput
 25 VoodooI2CHID
