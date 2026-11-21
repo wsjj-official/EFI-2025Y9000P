@@ -6,8 +6,9 @@
   `CpuTscSync.kext` 条目与 kext 目录都在，`Enabled=true`。
 - boot-args 统一：**26-78WW 补上 `TSC_sync_margin=0`**，26-83WW 本来就有；
   现在 26 的两份 boot-args 完全一致，15 的两份都不带该参数。
-- `ProvideCurrentCpuInfo` 本来就是 `true`；`CpuTopologyRebuild.kext` 在 26 的两份里仍为关闭状态（与 15 不同，
-  15 的两份已启用）。
+- `ProvideCurrentCpuInfo` 本来就是 `true`。
+- **最终状态（同日再调）**：26 的两份**也启用 `CpuTopologyRebuild.kext`**，与 15 的两份一致；
+  `TSC_sync_margin=0` **从 26 的两份移除**（`CpuTscSync.kext` 保留），至此四份 EFI 都不带该参数。
 - 文档：README §7（26 参数块 + 参数表）、`docs/BIOS-VERSIONS.md`、`docs/EFI-DETAILS.md` 同步。
 
 ## 2026-11-21 — 15-83WW 同步蓝牙与 Quirks 调整（Wi-Fi 驱动不动）
