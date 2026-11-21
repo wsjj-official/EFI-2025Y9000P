@@ -50,7 +50,7 @@ ACPI Error: [TDC1] Namespace lookup failure
 | `ACPI > Delete` | `DMAR` | `DMAR` + **`APIC`（OEM `CB-01   `，TableLength 856）** |
 | `ACPI > Patch` | 9 条（含一条 0 命中的占位补丁） | 10 条：8 条通用 + **两条 PC02** |
 | `UTBMap` `TXHC` | 3 口（`HS01@1`、`SS01@2`、`SS02@3`） | **5 口**（额外 `SS03@4`、`SS04@5`） |
-| boot-args | 见 §7 | 26 那份多一个 **`TSC_sync_margin=0`**（CpuTscSync 防 panic）；15 的 83WW 于 2026-11-21 移除该参数 |
+| boot-args | 见 §7 | 26 的两份都多一个 **`TSC_sync_margin=0`**（配 `CpuTscSync` 防 panic）；15 的两份都不带 |
 | 其余（kext / Block / Tools / SMBIOS） | 相同 | 相同（蓝牙保留 **FixA2DP**，`-btlfxa2dpcheck`） |
 
 > `EFI-Tahoe-83WW/` **没有**加入核显驱动相关的东西（`XeGfxIntelFB.kext`、`SSDT-DGPU-HYB.aml`、`-nmintelfboff`、`nvfbhidpi=1`、`nvmaxbpc=12`）。本机内屏由独显输出，这套只影响 iGPU/HDMI 音频等场景。

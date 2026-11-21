@@ -374,10 +374,10 @@ alcid=13 alcverbs=1 nvrmacpibl=1 -btlfxa2dpcheck -itlawdl
 keepsyms=1 -vi2c-force-polling -ibtcompatbeta gfxrst=4
 nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth
 amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
-alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
+alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck TSC_sync_margin=0
 ```
 
-（83WW 那份末尾多一个 `TSC_sync_margin=0`）
+（26 的两份**都带** `TSC_sync_margin=0`，配 `CpuTscSync`;78WW 那份于 2026-11-21 补上）
 
 | 只在 26 上需要的参数 | 为什么 |
 | --- | --- |
@@ -398,7 +398,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 | `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光，**亮度滑块与亮度键恢复**；只在装了 NullMoth 驱动时生效。若加完卡在 GPU 启动阶段，删掉它 |
 | `itlwm_he=1` | **只有 26 的两份还用**：给 BE200 打开 HE / 802.11ax（Wi-Fi 6 / 6 GHz 能力集入口）。**15 的两份已不需要**（新驱动默认开 HE），多余的参数已移除 |
 | `-itlawdl` | **只有 15 的两份有**：打开 AWDL，用于**隔空投送（尝鲜）**。只支持 iPhone → Mac、约 60 KB/s；不想要就删掉 |
-| `TSC_sync_margin=0` | **只有 `EFI-Tahoe-83WW` 还有**：关 VT-d 时配 `CpuTscSync`，避免 `Non-monotonic time` panic（15 的 83WW 于 2026-11-21 移除） |
+| `TSC_sync_margin=0` | **只有 26 的两份有**：关 VT-d 时配 `CpuTscSync`，避免 `Non-monotonic time` panic（15 的两份都不带） |
 | `amfi_get_out_of_my_way=0x1 amfi=0x80` | AMFI 放行，配合 AMFIPass 加载未签名 kext |
 | `ipc_control_port_options=0` | 规避部分 IPC 限制 |
 | `alcid=13` | AppleALC 使用 layout 13 |

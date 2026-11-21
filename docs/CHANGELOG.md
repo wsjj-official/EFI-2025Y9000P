@@ -1,5 +1,15 @@
 # 变更记录
 
+## 2026-11-21（二）— 26 的两份 EFI：`CpuTscSync` 与 `TSC_sync_margin=0` 统一保留
+
+- 一度在 26 的两份里删掉 `CpuTscSync.kext`（并去掉 `TSC_sync_margin=0`），随后按实测需要**恢复**：
+  `CpuTscSync.kext` 条目与 kext 目录都在，`Enabled=true`。
+- boot-args 统一：**26-78WW 补上 `TSC_sync_margin=0`**，26-83WW 本来就有；
+  现在 26 的两份 boot-args 完全一致，15 的两份都不带该参数。
+- `ProvideCurrentCpuInfo` 本来就是 `true`；`CpuTopologyRebuild.kext` 在 26 的两份里仍为关闭状态（与 15 不同，
+  15 的两份已启用）。
+- 文档：README §7（26 参数块 + 参数表）、`docs/BIOS-VERSIONS.md`、`docs/EFI-DETAILS.md` 同步。
+
 ## 2026-11-21 — 15-83WW 同步蓝牙与 Quirks 调整（Wi-Fi 驱动不动）
 
 - **蓝牙三件套**：`IntelBluetoothFirmware` 升到 **2.5.1**（11,172,264 B），`BlueToolFixup` 换成 2026-11-21 构建

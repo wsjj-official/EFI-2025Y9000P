@@ -565,7 +565,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 | `ACPI > Delete` | `DMAR` | `DMAR` + `APIC`（OEM `CB-01   `，TableLength 856） |
 | `ACPI > Patch` | 9 条 | 10 条：多两条 PC02（`a04e2f92…`、`a08e7716…`），去掉 0 命中的占位补丁 |
 | `UTBMap` `TXHC` | 3 口 | 5 口（`SS03@4`、`SS04@5`） |
-| `boot-args` | 见 §6 | 多 `TSC_sync_margin=0` |
+| `boot-args` | 见 §6 | 多 `TSC_sync_margin=0`（26 的两份都有） |
 
 含义与验证状态见 [BIOS 版本对照](BIOS-VERSIONS.md)。
 
