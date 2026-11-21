@@ -320,7 +320,7 @@ EFI/
 | `PanicNoKextDump` | true | panic 时不 dump kext |
 | `PowerTimeoutKernelPanic` | true | 电源超时不 panic |
 | `ProvideCurrentCpuInfo` | true | 提供当前 CPU 信息 |
-| `XhciPortLimit` | 0 | 关闭端口数限制补丁（2026-11-21 起；需要时改回 `true`） |
+| `XhciPortLimit` | true | 解除 15 端口限制（XHCI / XHC2 各映射 24 口，必须开启；OpenCore ≥0.9.3 才有效） |
 | `SetApfsTrimTimeout` | -1 | 默认 TRIM 行为 |
 
 ### 5.5 `Misc`

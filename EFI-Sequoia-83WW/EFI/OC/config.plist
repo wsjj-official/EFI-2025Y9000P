@@ -1365,7 +1365,7 @@
 			<key>ThirdPartyDrives</key>
 			<false/>
 			<key>XhciPortLimit</key>
-			<integer>0</integer>
+			<true/>
 		</dict>
 		<key>Scheme</key>
 		<dict>

@@ -81,7 +81,7 @@
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
 | 有线网卡（I226-V） | ✅ 已验证 | AppleIGC 1.9d2，`en0` built-in |
-| USB | ✅ 已验证 | USBToolBox 1.2.0 + UTBMap 1.1；`XhciPortLimit = 0`（15-83WW 自 2026-11-21 起关闭） |
+| USB | ✅ 已验证 | USBToolBox 1.2.0 + UTBMap 1.1；`XhciPortLimit = true`（四份 EFI 统一开启） |
 | NVMe | ✅ 已验证 | NVMeFix 1.1.4，`SetApfsTrimTimeout = -1` |
 | 内置麦克风 | ✅ 设备存在 | 本版未单独做录音回放测试 |
 | 摄像头 | ⚠️ 未验证 | 取决于 USB 映射 |
@@ -425,7 +425,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
 - `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；**BIOS 78WW / 83WW 都能用，但必须配对应的 EFI**：78WW 用 `EFI-*-78WW/`，83WW 用 `EFI-*-83WW/`（83WW 的 ACPI 配方不同，详见第 6 节与 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)）；混用会开不了机。
-- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit` 自 2026-11-21 起改为 **0（关闭）**；若发现某些口不工作，改回 `true` 即可。
+- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit = true`：本机 XHCI / XHC2 各映射 24 口，超过 macOS 的 15 口上限；OpenCore **0.9.3 及以后**该补丁是重新实现的版本（本机 1.0.87），所以要用 `true` 才能枚举全部端口。
 
 ---
 
