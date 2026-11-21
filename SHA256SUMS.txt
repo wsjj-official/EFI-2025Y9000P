@@ -32,8 +32,8 @@ a360777ad114f29a775e22aff2c91a92f106f55eadf4844af004760db143cd28  ./EFI-Sequoia-
 e40be258a6e64c8ae0babb94a4916067d609266fe92c843ab67ab9dfe1a440dd  ./EFI-Sequoia-78WW/EFI/OC/Kexts/AppleIGC.kext/Contents/Resources/README.md
 e1cb827c579d7b3dbc51cf791539ce279766318e093206ad53d718d067da4d95  ./EFI-Sequoia-78WW/EFI/OC/Kexts/AppleIGC.kext/Contents/_CodeSignature/CodeResources
 597ee9b2c34ef29bc6b9c2774c2e0c41e2a7847e6a99bdad595072c0961f4253  ./EFI-Sequoia-78WW/EFI/OC/Kexts/AppleMCEReporterDisabler.kext/Contents/Info.plist
-d1f7847acaa1372b6d4a3e116288b5f62fe7e194f4b29e90dc937c45ac96cdcc  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BlueToolFixup.kext/Contents/Info.plist
-d1c430ae34b6522e1b9f4c0cb9426d6b38949dc87790a5b2bca09724597ceac3  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BlueToolFixup.kext/Contents/MacOS/BlueToolFixup
+54b2939ec30f6ddea07f4bded8f3e74dbbba380d97ea8854edd815fb2c4df396  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BlueToolFixup.kext/Contents/Info.plist
+c897622d78f37c09cc612ef233e10cd4e96ee7c8703a70c23911c8a4bfd807d6  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BlueToolFixup.kext/Contents/MacOS/BlueToolFixup
 f055eb6f0caff1a8c4ccbdccf337a0a177b751050fb0ad4dda3d750d0b1f6d62  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BrightnessKeys.kext/Contents/Info.plist
 f47210181030a6005ccb17c125dbe81b359c2c9fd74c12b99b860b8b5f44a72a  ./EFI-Sequoia-78WW/EFI/OC/Kexts/BrightnessKeys.kext/Contents/MacOS/BrightnessKeys
 36ee8b76c43df4a9390163b410d80acd05af4f815f2b71c3ec0e67f9fb76e2f4  ./EFI-Sequoia-78WW/EFI/OC/Kexts/CpuTopologyRebuild.kext/Contents/Info.plist
@@ -46,8 +46,8 @@ f6ab0e00c3fd30c37f9c36420264f63dba302a69818e70009219c1aa71d85fa7  ./EFI-Sequoia-
 39cf2ee07b7b333e7c179d0bf4d798a5b72af6a4e584f51e642703bbfa4fc828  ./EFI-Sequoia-78WW/EFI/OC/Kexts/HoRNDIS.kext/Contents/Resources/en.lproj/InfoPlist.strings
 fdc14c5cf19f31e958534843c23d907fb560c6f24a4cef402bf99bf8b2045b8c  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBTPatcher.kext/Contents/Info.plist
 441907ed9270e88b1c63f00a9c1d3c08a29ec75f0f1eeec843e47237391ca7ed  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBTPatcher.kext/Contents/MacOS/IntelBTPatcher
-ef1b51f03f262d6d35bc824c869e02b607d53b76017ec521bf1452e9833ad8f4  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBluetoothFirmware.kext/Contents/Info.plist
-ad1765c4cef560820a36834e5905ef43a2f8dcd74cc86a0d2ee9bf3449a44c30  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBluetoothFirmware.kext/Contents/MacOS/IntelBluetoothFirmware
+89c2c9bca6355e31c5b1c5fd8fc33ed7081b03d2e35790ee065d3a7de5cc235c  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBluetoothFirmware.kext/Contents/Info.plist
+2da7a9d1213fbb0ba1a6b11396ea416fd06ba4597dfca569aa1c6f53ada25617  ./EFI-Sequoia-78WW/EFI/OC/Kexts/IntelBluetoothFirmware.kext/Contents/MacOS/IntelBluetoothFirmware
 c35d818b19efeb0c75cf8a38786e24224c73ea720b941d02896b9bbddb370d74  ./EFI-Sequoia-78WW/EFI/OC/Kexts/Lilu.kext/Contents/Info.plist
 e3f00df5aca98c70363489292514f088ae3b667417c9c5afdd33799ff09390bd  ./EFI-Sequoia-78WW/EFI/OC/Kexts/Lilu.kext/Contents/MacOS/Lilu
 497be1345c277df6cd131715e39c12c834ad22237b94a82d50b2039e10549d67  ./EFI-Sequoia-78WW/EFI/OC/Kexts/NVMeFix.kext/Contents/Info.plist
@@ -198,7 +198,7 @@ ef2b6cd9fc4e11c3ed558555fcfbe9fb3377fd5d87212ceb5e1dc1fa945e0445  ./EFI-Sequoia-
 c64885a9f5b7717321a49927de98f14d19cbb7ae121a1d0f9f62d7d74daf43e0  ./EFI-Sequoia-78WW/EFI/OC/Resources/Label/Windows.l2x
 a19afffbcff69562165a6ec37125f07b140dc58f0f14d1522c326c5cab3c09b3  ./EFI-Sequoia-78WW/EFI/OC/Resources/Label/Windows.lbl
 f99c1fa37693521d414c000059d69f991740bce9d33507da8f7b5113689d3f70  ./EFI-Sequoia-78WW/EFI/OC/Tools/NullMothSafe.efi
-e2c4b0e2bf64a1c63577987714e6b3eb8b78aa2d7b60140ce93ea21be265a61d  ./EFI-Sequoia-78WW/EFI/OC/config.plist
+79df89f957438c74b46de6c91571d8512fd76da775d72a85336a33e6a04aa394  ./EFI-Sequoia-78WW/EFI/OC/config.plist
 5546c5dcc63bda3b1a8a4a732c69fd6fa645cb2b31b16f18e62453318104f3b7  ./EFI-Sequoia-83WW/EFI/BOOT/.contentFlavour
 75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d  ./EFI-Sequoia-83WW/EFI/BOOT/.contentVisibility
 d0163dfbe5d2ea46aececd7d7349acfa5b75dfed2993e8489816f3dda71914c8  ./EFI-Sequoia-83WW/EFI/BOOT/BOOTx64.efi
@@ -814,11 +814,11 @@ f99c1fa37693521d414c000059d69f991740bce9d33507da8f7b5113689d3f70  ./EFI-Tahoe-83
 2792f2ce20f01b277f4c8f7f2c6d200c155aeaed657059af050399186693d6ef  ./EFI-Tahoe-83WW/EFI/OC/config.plist
 4b33fbfe809ce37e0622ac4a12af01083ebdd994ee804e8bda5fd5dcfd9ea7e3  ./EFI-Tahoe-83WW/EFI/finish-setup.sh
 a806d6eb6fcf79aeaf9c6010884559f59dfc7ff5d336cef50d33b158813c6d3a  ./README-macOS26-Tahoe.md
-c26290502f6f4cfba0ea247b1f83ac10d60b75894790894f26ce0675f754479a  ./README.md
+30ca8b9b4489b47457b8ab0e60ab48108968daace485b4ef707851cd19d40401  ./README.md
 4f50580cc1657940d3cd20cb0cd145fa1f1d74719218795b1c53af712c607a6a  ./THIRD-PARTY.md
 0e769818c0cdba585da33543bf4052159ecf1555eeb833b590d12dc2226bbd2e  ./docs/AUDIO-AW88399.md
 c5d923b9ec254779f0514563f965bc5d676359a8346ab5c658418bb5592754a9  ./docs/BIOS-VERSIONS.md
-0a5ed6c2a03e6d5939d9b8b157cf3e42088a8a8606a97b91db43f331041c5742  ./docs/CHANGELOG.md
+d216defe8389c03a4f19407ac47880cb6306bada79cfdfe2bbd43e94cd473cec  ./docs/CHANGELOG.md
 95fc47f3339c9efe1e8ec311afe7d70c2d76f421ca1efdba1df6337b5473d48b  ./docs/EFI-DETAILS.md
 4eb27ec413616d73f6786d353c135c33adb48a4fe2182d8a6de5ceeb4cc0aff3  ./docs/INSTALL.md
 e72abf88ba01b793f6b8dbda9028b8fcb50eda6b9e8e66d47419ca36154f7b25  ./docs/TROUBLESHOOTING.md

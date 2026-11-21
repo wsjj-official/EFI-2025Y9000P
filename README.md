@@ -77,7 +77,7 @@
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
 | Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm.kext`（尝鲜版 `1a8d398`，2.4.0），**无需 OCLP 根补丁**；HE/Wi-Fi 6 **默认开启**（不再需要 `itlwm_he=1`）；**隔空投送仅 iPhone→Mac 且速度很慢**；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
-| 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | **IntelBluetoothFirmware 2.5.1**（15-83WW 起）+ IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3**（2026-11-21 构建，配 `-btlfxa2dpcheck`） |
+| 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | **IntelBluetoothFirmware 2.5.1**（15 的两份）+ IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3**（2026-11-21 构建，配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
 | 有线网卡（I226-V） | ✅ 已验证 | AppleIGC 1.9d2，`en0` built-in |

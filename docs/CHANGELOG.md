@@ -11,6 +11,8 @@
 - boot-args 移除 `TSC_sync_margin=0`（15 的 83WW 实测不再需要；26 的 83WW 仍保留）。
 - **Wi-Fi 驱动保持 1a8d398 不动**（测试用的 0887fb1 及 AWDL 测试参数 `-itlawdlllw` / `-itlawdlstanding`
   不进入正式包）。
+- **78WW 的 15 EFI（`EFI-Sequoia-78WW/`）同步上述蓝牙三件套、kext 顺序与 `CpuTopologyRebuild`**；
+  **ACPI 一律不动**：78WW 走「预打补丁 DSDT」，83WW 走「APIC 替换 + 两条 PC02」，两者不能互换。
 
 ## 2026-11-20 — 15 的两份 EFI 换上「隔空投送尝鲜版」Wi-Fi 驱动
 
