@@ -1,5 +1,16 @@
 # 变更记录
 
+## 2026-11-21 — 15-83WW 同步蓝牙与 Quirks 调整（Wi-Fi 驱动不动）
+
+- **蓝牙三件套**：`IntelBluetoothFirmware` 升到 **2.5.1**（11,172,264 B），`BlueToolFixup` 换成 2026-11-21 构建
+  （58,200 B，仍认 `-btlfxa2dpcheck` 与 `-btlfxnointel`），并把 `BlueToolFixup` 在 `Kernel > Add` 里排到
+  `IntelBTPatcher` / `IntelBluetoothFirmware` 之后（原来在第 6 位）。影响范围仅 `EFI-Sequoia-83WW/`。
+- `CpuTopologyRebuild.kext` 由**关闭改为启用**。
+- `Kernel > Quirks > XhciPortLimit` 由 `true` 改为 **0**（关闭）；若出现 USB 口缺失可改回 `true`。
+- boot-args 移除 `TSC_sync_margin=0`（15 的 83WW 实测不再需要；26 的 83WW 仍保留）。
+- **Wi-Fi 驱动保持 1a8d398 不动**（测试用的 0887fb1 及 AWDL 测试参数 `-itlawdlllw` / `-itlawdlstanding`
+  不进入正式包）。
+
 ## 2026-11-20 — 15 的两份 EFI 换上「隔空投送尝鲜版」Wi-Fi 驱动
 
 - 驱动：`AirportItlwm.kext`（Eric-AirportItlwm 社区测试 `1a8d398`，2.4.0 Debug，`com.zxystd.AirportItlwm`），

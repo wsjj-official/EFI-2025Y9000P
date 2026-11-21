@@ -759,24 +759,6 @@
 				<key>Arch</key>
 				<string>Any</string>
 				<key>BundlePath</key>
-				<string>BlueToolFixup.kext</string>
-				<key>Comment</key>
-				<string>BlueToolFixup 2.7.3 FixA2DP (A2DP resume fix; needs -btlfxa2dpcheck)</string>
-				<key>Enabled</key>
-				<true/>
-				<key>ExecutablePath</key>
-				<string>Contents/MacOS/BlueToolFixup</string>
-				<key>MaxKernel</key>
-				<string></string>
-				<key>MinKernel</key>
-				<string>19.0.0</string>
-				<key>PlistPath</key>
-				<string>Contents/Info.plist</string>
-			</dict>
-			<dict>
-				<key>Arch</key>
-				<string>Any</string>
-				<key>BundlePath</key>
 				<string>BrightnessKeys.kext</string>
 				<key>Comment</key>
 				<string>V1.0.4</string>
@@ -799,7 +781,7 @@
 				<key>Comment</key>
 				<string>V2.0.2</string>
 				<key>Enabled</key>
-				<false/>
+				<true/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/CpuTopologyRebuild</string>
 				<key>MaxKernel</key>
@@ -833,7 +815,7 @@
 				<key>BundlePath</key>
 				<string>IntelBluetoothFirmware.kext</string>
 				<key>Comment</key>
-				<string>V2.5.0</string>
+				<string>V2.5.1</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -842,6 +824,24 @@
 				<string></string>
 				<key>MinKernel</key>
 				<string></string>
+				<key>PlistPath</key>
+				<string>Contents/Info.plist</string>
+			</dict>
+			<dict>
+				<key>Arch</key>
+				<string>Any</string>
+				<key>BundlePath</key>
+				<string>BlueToolFixup.kext</string>
+				<key>Comment</key>
+				<string>BlueToolFixup 2.7.3（2026-11-21 构建；-btlfxa2dpcheck 仍有效）</string>
+				<key>Enabled</key>
+				<true/>
+				<key>ExecutablePath</key>
+				<string>Contents/MacOS/BlueToolFixup</string>
+				<key>MaxKernel</key>
+				<string></string>
+				<key>MinKernel</key>
+				<string>19.0.0</string>
 				<key>PlistPath</key>
 				<string>Contents/Info.plist</string>
 			</dict>
@@ -1365,7 +1365,7 @@
 			<key>ThirdPartyDrives</key>
 			<false/>
 			<key>XhciPortLimit</key>
-			<true/>
+			<integer>0</integer>
 		</dict>
 		<key>Scheme</key>
 		<dict>
@@ -1592,7 +1592,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 -btlfxa2dpcheck TSC_sync_margin=0 -itlawdl</string>
+				<string>keepsyms=1 -vi2c-force-polling nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0 alcid=13 alcverbs=1 nvrmacpibl=1 -btlfxa2dpcheck -itlawdl</string>
 				<key>csr-active-config</key>
 				<data>
 				QwoAAA==

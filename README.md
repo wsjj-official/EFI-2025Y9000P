@@ -77,11 +77,11 @@
 | 内置扬声器（高音 + 低音） | ✅ 已验证 | 两颗 AW88399 均 `AW88399Ready = Yes`，播放时 `AmplifierRunning = Yes` |
 | 系统音量 / 静音 | ✅ 正常 | AppleALC 共享 DAC 分支镜像 pin17 / pin14 |
 | Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm.kext`（尝鲜版 `1a8d398`，2.4.0），**无需 OCLP 根补丁**；HE/Wi-Fi 6 **默认开启**（不再需要 `itlwm_he=1`）；**隔空投送仅 iPhone→Mac 且速度很慢**；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
-| 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | IntelBluetoothFirmware 2.5.0 + IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3 FixA2DP**（配 `-btlfxa2dpcheck`） |
+| 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | **IntelBluetoothFirmware 2.5.1**（15-83WW 起）+ IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3**（2026-11-21 构建，配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
 | 有线网卡（I226-V） | ✅ 已验证 | AppleIGC 1.9d2，`en0` built-in |
-| USB | ✅ 已验证 | USBToolBox 1.2.0 + UTBMap 1.1，`XhciPortLimit = true` |
+| USB | ✅ 已验证 | USBToolBox 1.2.0 + UTBMap 1.1；`XhciPortLimit = 0`（15-83WW 自 2026-11-21 起关闭） |
 | NVMe | ✅ 已验证 | NVMeFix 1.1.4，`SetApfsTrimTimeout = -1` |
 | 内置麦克风 | ✅ 设备存在 | 本版未单独做录音回放测试 |
 | 摄像头 | ⚠️ 未验证 | 取决于 USB 映射 |
@@ -366,7 +366,7 @@ amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0
 alcid=13 alcverbs=1 nvrmacpibl=1 -btlfxa2dpcheck -itlawdl
 ```
 
-（83WW 那份末尾多一个 `TSC_sync_margin=0`；`-itlawdl` 是 2026-11-20 为隔空投送加的，不想要就删掉）
+（**15 的两份都不带 `TSC_sync_margin`**——83WW 那份在 2026-11-21 已移除；`-itlawdl` 是 2026-11-20 为隔空投送加的，不想要就删掉）
 
 **macOS 26（`EFI-Tahoe-78WW/` 与 `EFI-Tahoe-83WW/`）** —— 多出来的几个是 Tahoe / 蓝牙 / WhateverGreen 的硬要求：
 
@@ -398,7 +398,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 | `nvrmacpibl=1` | 让 NVKMS 自己注册内屏背光，**亮度滑块与亮度键恢复**；只在装了 NullMoth 驱动时生效。若加完卡在 GPU 启动阶段，删掉它 |
 | `itlwm_he=1` | **只有 26 的两份还用**：给 BE200 打开 HE / 802.11ax（Wi-Fi 6 / 6 GHz 能力集入口）。**15 的两份已不需要**（新驱动默认开 HE），多余的参数已移除 |
 | `-itlawdl` | **只有 15 的两份有**：打开 AWDL，用于**隔空投送（尝鲜）**。只支持 iPhone → Mac、约 60 KB/s；不想要就删掉 |
-| `TSC_sync_margin=0` | **只有 83WW 的两份有**：关 VT-d 时配 `CpuTscSync`，避免 `Non-monotonic time` panic |
+| `TSC_sync_margin=0` | **只有 `EFI-Tahoe-83WW` 还有**：关 VT-d 时配 `CpuTscSync`，避免 `Non-monotonic time` panic（15 的 83WW 于 2026-11-21 移除） |
 | `amfi_get_out_of_my_way=0x1 amfi=0x80` | AMFI 放行，配合 AMFIPass 加载未签名 kext |
 | `ipc_control_port_options=0` | 规避部分 IPC 限制 |
 | `alcid=13` | AppleALC 使用 layout 13 |
@@ -425,7 +425,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
 - `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；**BIOS 78WW / 83WW 都能用，但必须配对应的 EFI**：78WW 用 `EFI-*-78WW/`，83WW 用 `EFI-*-83WW/`（83WW 的 ACPI 配方不同，详见第 6 节与 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)）；混用会开不了机。
-- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit = true` 已打开，实测左侧 USB-A / Type-C / 雷电口均正常。
+- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit` 自 2026-11-21 起改为 **0（关闭）**；若发现某些口不工作，改回 `true` 即可。
 
 ---
 
