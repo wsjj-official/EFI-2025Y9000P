@@ -20,7 +20,7 @@
 | --- | --- |
 | EFI 版本 | v1.0 |
 | 导出日期 | 2026-10-27 |
-| OpenCore | 自定义构建，版本字符串为 `REL-XXX-YYYY-MM-DD`（2025-09 构建，非原版 Acidanthera 版本号） |
+| OpenCore | **1.0.8**；`OpenCore.efi` 内的版本宏被替换成 `REL-XXX-YYYY-MM-DD`，不能用 `strings` 判断版本 |
 | `OpenCore.efi` | 612 KB |
 | `BOOTx64.efi` | 24 KB |
 | `config.plist` | XML，约 44 KB |
@@ -181,7 +181,7 @@ EFI/
 | AMFIPass | `com.dhinakg.AMFIPass` | 1.4.1 | AMFI 放行 |
 | HoRNDIS | `com.joshuawise.kexts.HoRNDIS` | 9.2 | USB 网络共享 |
 | ECM-Override | `com.dortania.ECM-Override` | 9.9.9 | USB CDC ECM |
-| CpuTopologyRebuild | `org.b00t0x.CpuTopologyRebuild` | 2.0.2 | 大小核拓扑（默认禁用） |
+| CpuTopologyRebuild | `org.b00t0x.CpuTopologyRebuild` | 2.0.2 | 大小核拓扑（2026-11-21 起四份 EFI 都启用） |
 
 ### 4.2 `Kernel > Add` 顺序
 
@@ -196,7 +196,7 @@ EFI/
  6 AppleMCEReporterDisabler
  7 BlueToolFixup
  8 BrightnessKeys
- 9 CpuTopologyRebuild            (Enabled = false)
+ 9 CpuTopologyRebuild
 10 IntelBTPatcher
 11 IntelBluetoothFirmware
 12 NVMeFix
@@ -228,7 +228,7 @@ EFI/
 说明：
 
 - `AW88399Driver` 放在最后，但依赖的 `VoodooI2CServices` / `VoodooGPIO` / `VoodooI2C` 都在前面；OpenCore 在启动匹配阶段统一解析，位置不影响匹配。
-- `CpuTopologyRebuild` 默认禁用；如果需要在 24 核 CPU 上调整大小核拓扑，可自行启用并测试。
+- `CpuTopologyRebuild` 自 2026-11-21 起在四份 EFI 里**都启用**（此前 26 的两份是关闭的）；它把 P 核当主核、E 核当超线程，配合 `ProvideCurrentCpuInfo = true` 使用。若发现跑分或虚拟机表现异常，关掉它即可回到原样。
 - 只保留一个 `VoodooInput`：`VoodooPS2Controller` 内的那份禁用，使用 `VoodooI2C` 插件里的 1.1.7。
 - `MinKernel` / `MaxKernel` 只对以下项设了限制：
   - `AMFIPass`：`MinKernel 20.0.0`

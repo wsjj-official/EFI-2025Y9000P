@@ -64,7 +64,7 @@
 | 触摸板 | Goodix GXTP5100（I2C，`\_SB.PC02.I2C1`） |
 | 系统（验证时） | macOS Sequoia **15.8（24H23，Darwin 24.6.0）**；macOS Tahoe **26.7**（26 的两份 EFI） |
 | BIOS | **78WW 与 83WW 都实测可运行**，各用对应 EFI（见第 6 节） |
-| OpenCore | 自定义构建（版本字符串 `REL-XXX-YYYY-MM-DD`） |
+| OpenCore | **1.0.8**（`OpenCore.efi` 里的版本宏被替换成 `REL-XXX-YYYY-MM-DD`，别拿 `strings` 判断版本） |
 | Lilu | 1.7.3 |
 
 ---
@@ -79,6 +79,7 @@
 | Wi-Fi（BE200） | ✅ 已验证（**WPA3 已可用**） | `AirportItlwm.kext`（尝鲜版 `1a8d398`，2.4.0），**无需 OCLP 根补丁**；HE/Wi-Fi 6 **默认开启**（不再需要 `itlwm_he=1`）；**隔空投送仅 iPhone→Mac 且速度很慢**；**WPA3-Personal（SAE/H2E）实测可连**，WPA2 也照常可用；6 GHz 的 SSID 解析与关联已修；**Wi-Fi 7（EHT/802.11be）在 macOS 15 上不支持**；26 上 EHT/MLO 仍属实验（本版修了 MLO 加入崩溃） |
 | 蓝牙 | ✅ 驱动已加载 + A2DP 修复 | **IntelBluetoothFirmware 2.5.1**（15 的两份）+ IntelBTPatcher 2.5.0 + **BlueToolFixup 2.7.3**（2026-11-21 构建，配 `-btlfxa2dpcheck`） |
 | 触摸板 / 键盘 | ✅ 已验证 | VoodooI2C 2.9.1 + VoodooI2CHID + GPI0 / VoodooPS2Controller 2.3.8 |
+| CPU 大小核拓扑 | ✅ 已启用 | `CpuTopologyRebuild 2.0.2`（四份 EFI 都启用，2026-11-21 起）：P 核当主核、E 核当超线程；配合 `ProvideCurrentCpuInfo=true` |
 | 电池 / 传感器 | ✅ 驱动已加载 | VirtualSMC 1.3.9 + SMCBatteryManager / SMCProcessor / SMCSuperIO |
 | 有线网卡（I226-V） | ✅ 已验证 | AppleIGC 1.9d2，`en0` built-in |
 | USB | ✅ 已验证 | USBToolBox 1.2.0 + UTBMap 1.1；`XhciPortLimit = true`（四份 EFI 统一开启） |
@@ -425,7 +426,7 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
 - 3.5 mm 耳机口、HDMI/DP 音频、睡眠/唤醒、摄像头、长时间播放未做本版验证。
 - `AW88399Driver.kext` 与 `AppleALC.kext` 来自同型号 macOS 26 构建；Mach-O 没有版本下限，`LSMinimumSystemVersion = 26.0` 不影响在 15.8 上加载。若系统大版本更新后失效，需要按源码重编到对应 SDK。
 - `DSDT.aml` 是整机补丁表，同型号可复用，但**不同 BIOS 版本可能有差异**；**BIOS 78WW / 83WW 都能用，但必须配对应的 EFI**：78WW 用 `EFI-*-78WW/`，83WW 用 `EFI-*-83WW/`（83WW 的 ACPI 配方不同，详见第 6 节与 [docs/BIOS-VERSIONS.md](docs/BIOS-VERSIONS.md)）；混用会开不了机。
-- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit = true`：本机 XHCI / XHC2 各映射 24 口，超过 macOS 的 15 口上限；OpenCore **0.9.3 及以后**该补丁是重新实现的版本（本机 1.0.87），所以要用 `true` 才能枚举全部端口。
+- USB 上限：本机两个 xHCI（`XHC2` PCH 主控、`TXHC` USB4）端口数超过 macOS 每控制器 15 个的额度，配置里 `XhciPortLimit = true`：本机 XHCI / XHC2 各映射 24 口，超过 macOS 的 15 口上限；OpenCore **0.9.3 及以后**该补丁是重新实现的版本（本机 1.0.8），所以要用 `true` 才能枚举全部端口。
 
 ---
 
@@ -586,6 +587,15 @@ alcid=13 alcverbs=1 nvrmacpibl=1 itlwm_he=1 -btlfxa2dpcheck
   - **能力边界（实测）**：隔空投送**只支持 iPhone → Mac**；ROC 模式 2.4 GHz 约 **60 KB/s**；**必须 2.4 GHz**（5 GHz 主站下搜不到设备）；有时要关开一次 Wi-Fi 才被 iPhone 扫到；Mac → iPhone 会停在 `SYN_SENT`；
   - 26 的两份不变（仍是 `AirportItlwm-Tahoe-BE200`，没有隔空投送）；
   - 文档：README §2 / §3.1 / §7 / §9 / §12、`docs/CHANGELOG.md`、`docs/EFI-DETAILS.md`。
+
+---
+
+- **2026-11-21 — 蓝牙 / CPU 拓扑 / 启动参数在四份 EFI 上统一**：
+  - **蓝牙**：`IntelBluetoothFirmware` 升到 **2.5.1**，`BlueToolFixup` 换成 2026-11-21 构建（仍认 `-btlfxa2dpcheck`），并把它在 `Kernel > Add` 里排到 `IntelBTPatcher` / `IntelBluetoothFirmware` 之后；15 的两份已完成，26 的两份本来就用 2.5.1 + Tahoe 版 patcher；
+  - **CPU**：`CpuTopologyRebuild` **四份都启用**（此前 26 的两份是关闭的）；`CpuTscSync` 四份都保留；
+  - **启动参数**：`TSC_sync_margin=0` 从四份移除（26-83WW 原本带、26-78WW 短暂补上后又移除）；现在四份 boot-args 只剩系统和功能相关的参数；
+  - **USB**：`XhciPortLimit` 短暂改为 `0` 后**改回 `true`**——本机 OpenCore **1.0.8**（≥ 0.9.3，补丁是重新实现的版本），而 XHCI / XHC2 各映射 24 口，超了 macOS 的 15 口上限，必须开着才能全枚举；
+  - **文档**：README §1/§2/§7/§9、`docs/BIOS-VERSIONS.md`、`docs/EFI-DETAILS.md`、`docs/CHANGELOG.md` 同步；四个发布包与 full 快照于同日重打。
 
 ---
 

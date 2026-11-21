@@ -17,7 +17,7 @@
   （58,200 B，仍认 `-btlfxa2dpcheck` 与 `-btlfxnointel`），并把 `BlueToolFixup` 在 `Kernel > Add` 里排到
   `IntelBTPatcher` / `IntelBluetoothFirmware` 之后（原来在第 6 位）。影响范围仅 `EFI-Sequoia-83WW/`。
 - `CpuTopologyRebuild.kext` 由**关闭改为启用**。
-- `Kernel > Quirks > XhciPortLimit` 一度改为 **0**，经确认本机 OpenCore 1.0.87（≥0.9.3，补丁为重新实现的版本）有效，**已改回 `true`**；
+- `Kernel > Quirks > XhciPortLimit` 一度改为 **0**，经确认本机 OpenCore 1.0.8（≥0.9.3，补丁为重新实现的版本）有效，**已改回 `true`**；
   本机 XHCI / XHC2 各映射 24 口，超过 macOS 的 15 口上限，关掉会丢 `SS02`–`SS10` 那批端口。
 - boot-args 移除 `TSC_sync_margin=0`（15 的 83WW 实测不再需要；26 的 83WW 仍保留）。
 - **Wi-Fi 驱动保持 1a8d398 不动**（测试用的 0887fb1 及 AWDL 测试参数 `-itlawdlllw` / `-itlawdlstanding`
